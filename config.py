@@ -5,7 +5,7 @@ env.read_env()
 
 BOT_TOKEN = env.str('BOT_TOKEN')
 
-#----------
+
 # настройки входа на сайт
 CITE_PASS = env.str('CITE_PASS')
 CITE_LOGIN = env.str('CITE_LOGIN')

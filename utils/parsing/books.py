@@ -1,29 +1,3 @@
-import aiohttp
-import fake_useragent
-from bs4 import BeautifulSoup
-import config
-
-
-async def get(url):
-    user = fake_useragent.UserAgent().random
-    url_to_register = 'http://flibusta.is/user'
-    headers = {'user-agent': user}
-    data = {
-        'name': config.CITE_LOGIN,
-        'pass': config.CITE_PASS,
-        'form_build_id': config.FORM_BUILD_ID,
-        'form_id': 'user_login',
-        'op': 'Вход в систему'
-    }
-
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url_to_register, headers=headers, data=data):  # Авторизация на сайте
-            async with session.get(url, headers=headers) as response:
-                res = await response.text()
-                soup = BeautifulSoup(res, 'lxml')
-                return soup
-
-
 def find_pagination(soup):
     # Проверяем на наличие страниц пагинанации
     # Не знаю нужна ли пагинация по страницам или достаточно 50 вариантов книг с первой страницы
@@ -43,7 +17,7 @@ def find_pagination(soup):
     return list_pages
 
 
-def parse_flibusta(soup):
+def search_books(soup):
     # Парсим все названия книг, авторов и ссылки с первой страницы
     block = soup.find('div', id='main')
     try:
@@ -72,18 +46,18 @@ def parse_flibusta(soup):
 
 def parsing_formats(soup):
     # Парсим страницу на доступные форматы
-    formats_list = ['fb2', 'epub', 'mobi', '(скачать pdf)', '(скачать djvu)']
+    formats_list = ['fb2', 'epub', 'mobi']
     formats_from_page = []
     ul = soup.find('select', id='useropt')
     if ul:
         # Проверка на наличие fb2/epub/mobi
         formats_from_page = [elem.text for elem in ul if elem.text in formats_list]
     else:
-        # Проверка на наличие pdf/djvu
+        # Проверка на наличие pdf/djvu/единственных вариантов fb2|mobi|epub и прочих файлов
         ul = soup.find('div', id='main').find_all('a')
         for a in ul:
             elem = a.text
-            if elem in formats_list:
+            if elem in formats_list or elem.startswith('(скачать '):
                 elem = elem[1:-1].split()[1]
                 formats_from_page.append(''.join(elem))
     return formats_from_page
@@ -94,9 +68,8 @@ def description(soup):
     text = soup.find('h2', text='Аннотация').find_next().text
     author = soup.find('h1', class_='title').find_next().find_next().text
     book = soup.find('h1', class_='title').text
+    book = book.split()[:-1]
 
-    formats_lst = ['(fb2)', '(epub)', '(mobi)', '(pdf)', '(djvu)']
-    book = book.split()[:-1] if list(book.split())[-1] in formats_lst else book
     if not text:
         text = 'Описание отсутствует'
     elif not author:
