@@ -25,7 +25,7 @@ async def chosen_link(message: types.Message):
     descr, author, book = description(soup)
 
     text = f'Автор: <b>{author}</b>\n\n' \
-           f'📖 <b>{" ".join(book)}</b>\n\n' \
+           f'📖 <b>{book}</b>\n\n' \
            f'Описание: \n' \
            f'<i>{descr}</i>'
     await message.answer(text=text,

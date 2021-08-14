@@ -1,9 +1,9 @@
 def search_authors(soup):
     # Ищем всех авторов по запросу
-    res = soup.find('div', id='main').find('ul').find_all('li')
+    res = soup.find('div', id='main').find('h3').find_next().find_all('a')
     authors_dict = {}
     for li in res:
-        link = li.find('a').get('href')
+        link = li.get('href')
         author = li.text
         authors_dict[link] = author
     count_authors = len(authors_dict.keys())

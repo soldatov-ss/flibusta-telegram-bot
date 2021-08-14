@@ -2,6 +2,7 @@ from io import BytesIO
 
 from aiogram import types
 from aiogram.types import InputFile
+from aiogram.utils.exceptions import NetworkError, InvalidQueryID
 
 from keyboards.formats import files_call
 from loader import dp
@@ -18,14 +19,22 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
     url = f'http://flibusta.is{link}/{format_file_for_share}'
     url_to_descr = f'http://flibusta.is{link}'
     soup = await get(url_to_descr)
-    descr, author, book = description(soup)             # описание книги
+    descr, author, book = description(soup)  # описание книги
 
-    await call.message.answer(f'Ожидайте, начинаю скачивать книгу 🙃 {url}')
+    wait = await call.message.answer(f'Ожидайте, начинаю скачивать книгу 🙃 {url}')
 
     response = await get_tempfile(url)
-    res_to_bytesio = BytesIO(response.read())       # конвентируем книгу в байты для отправки
-    file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{" ".join(book)}.{format_file}')
+    res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
+    file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{book}.{format_file}')
 
-    await call.message.answer_document(file, caption=author)
-    await call.answer(cache_time=60)
+    try:
+        await call.message.answer_document(file, caption=author)
+    except NetworkError:  # Ловим ограничение по отправке файлов весом больше 50 метров
+        await wait.edit_text(f'Не могу отправить файл😔\n'
+                             f'Попробуй скачать по ссылке:\n'
+                             f'{url}')
+    try:
+        await call.answer(cache_time=60)
+    except InvalidQueryID:  # Ловим ошибку на длительную скачивание/отправку
+        pass
     response.close()

@@ -1,22 +1,3 @@
-def find_pagination(soup):
-    # Проверяем на наличие страниц пагинанации
-    # Не знаю нужна ли пагинация по страницам или достаточно 50 вариантов книг с первой страницы
-    try:
-        pagination_ul = soup.find('div', class_='item-list').find('ul', class_='pager').find_all('li')
-    except AttributeError:
-        return None
-    list_pages = []
-
-    if pagination_ul:
-        for li in pagination_ul:
-            number_page = li.find('a')
-            if number_page:
-                if number_page.text.isdigit():
-                    list_pages.append(number_page.text)
-    # Возврат списка с нумерацией страниц
-    return list_pages
-
-
 def search_books(soup):
     # Парсим все названия книг, авторов и ссылки с первой страницы
     block = soup.find('div', id='main')
@@ -69,7 +50,7 @@ def description(soup):
     author = soup.find('h1', class_='title').find_next().find_next().text
     book = soup.find('h1', class_='title').text
     book = book.split()[:-1]
-
+    book = ' '.join(book).replace('"', '').replace("'", '')  # убираем скобки с названия, т.к. выдает ошибку при скачке
     if not text:
         text = 'Описание отсутствует'
     elif not author:
