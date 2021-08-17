@@ -4,7 +4,7 @@ from aiogram.utils.callback_data import CallbackData
 pagination_call = CallbackData('pagination', 'key', 'page', 'method')
 
 
-def get_page_keyboard(max_pages: int, key, method, page: int = 1):
+def get_small_keyboard(count_pages: int, key, method, page: int = 1):
     previous_page = page - 1
     previous_page_text = 'Назад'
     current_page_text = f'{page}'
@@ -27,7 +27,7 @@ def get_page_keyboard(max_pages: int, key, method, page: int = 1):
         )
     )
 
-    if next_page <= max_pages:
+    if next_page <= count_pages:
         markup.insert(
             InlineKeyboardButton(
                 text=next_page_text,
