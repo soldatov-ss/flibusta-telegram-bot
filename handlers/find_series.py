@@ -8,11 +8,13 @@ from loader import dp
 from utils.pages import create_pages, get_page
 from utils.parsing.general import get
 from utils.parsing.series import search_series
+from utils.throttlig import rate_limit
 
 CURRENT_SERIES = ''
 CURRENT_SERIES_LIST = []
 
 
+@rate_limit(limit=4)
 @dp.message_handler(Command('series'))
 async def series_command(message: types.Message):
     global CURRENT_SERIES, CURRENT_SERIES_LIST
@@ -58,5 +60,3 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     markup = get_small_keyboard(
         count_pages=len(CURRENT_SERIES_LIST), key=CURRENT_SERIES, page=current_page, method='series')
     await call.message.edit_text(current_page_text, reply_markup=markup)
-
-

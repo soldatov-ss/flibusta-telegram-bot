@@ -10,6 +10,7 @@ from loader import dp
 from utils.pages import create_pages, get_page
 from utils.parsing.authors import search_authors, author_books
 from utils.parsing.general import get
+from utils.throttlig import rate_limit
 
 AUTHORS_LST = []
 AUTHOR_BOOKS_LST = []
@@ -19,6 +20,7 @@ current_author_name = ''
 count_books = ''
 
 
+@rate_limit(limit=4)
 @dp.message_handler(Command('author'))
 async def author_command(message: types.Message):
     global CURRENT_AUTHOR, AUTHORS_LST
@@ -106,7 +108,6 @@ async def show_chosen(call: types.CallbackQuery, callback_data: dict):
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(
         items_list=AUTHOR_BOOKS_LST, author=[current_author_name, count_books], page=current_page)
-    print(len(AUTHOR_BOOKS_LST))
     markup = get_big_keyboard(count_pages=len(AUTHOR_BOOKS_LST), key=CURRENT_AUTHOR_BOOKS,
                               page=current_page, method='author_books')
     await call.message.edit_text(text=current_page_text, reply_markup=markup)
