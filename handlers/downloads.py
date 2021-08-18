@@ -5,7 +5,7 @@ from aiogram.types import InputFile
 from aiogram.utils.exceptions import NetworkError, InvalidQueryID
 
 from keyboards.formats import files_call
-from loader import dp
+from loader import dp, db
 from utils.parsing.books import description
 from utils.parsing.general import get, get_tempfile
 
@@ -37,4 +37,6 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
         await call.answer(cache_time=60)
     except InvalidQueryID:  # Ловим ошибку на длительную скачивание/отправку
         pass
+
+    await db.add_book(book=book, link=link)  # добавляем в базу данных (для составления рейтинга скачанных книг)
     response.close()

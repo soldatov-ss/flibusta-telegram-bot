@@ -8,5 +8,6 @@ async def set_default_commands(dp):
             types.BotCommand("author", "Поиск книг по автору"),
             types.BotCommand("series", "Поиск книг по названию серии"),
             types.BotCommand("help", "Вывести справку"),
+            types.BotCommand("rating", "топ 10 книг")
         ]
     )

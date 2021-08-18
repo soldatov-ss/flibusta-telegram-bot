@@ -1,11 +1,12 @@
 from aiogram import executor
-from loader import dp
+from loader import dp, db
 
 
 async def on_startup(dispatcher):
     import middlewares, handlers
     from utils.set_bot_command import set_default_commands
-
+    await db.create()
+    await db.create_table_users()
     await set_default_commands(dp)
 
 
