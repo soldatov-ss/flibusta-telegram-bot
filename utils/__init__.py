@@ -1,5 +1,4 @@
 from . import parsing
-from . import pages
-from . import strings
+from .pages import generate_pages, strings
 from . import set_bot_command
 from . import throttlig

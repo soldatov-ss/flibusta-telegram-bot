@@ -4,8 +4,8 @@ from aiogram import types
 
 from keyboards.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.formats import get_language, get_formats
-from loader import dp
-from utils.pages import create_pages, get_page
+from loader import dp, db
+from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.authors import languages
 from utils.parsing.books import parsing_formats, description
 from utils.parsing.general import get
@@ -24,11 +24,13 @@ async def chosen_link_author(message: types.Message):
     # url = f'http://flibustahezeous3.onion{link}'
 
     soup = await get(url)
-    abbr_lst, languages_lst = languages(soup)
+    abbr_lst, languages_lst, author = languages(soup)
     text = f'Книги доступны на следующих языках: \n' \
            f'Ты можешь выбрать удобный для тебя язык 👇'
+
     await message.answer(text, reply_markup=get_language(
         languages_lst=languages_lst, link=link, abbr_lst=abbr_lst))
+    await db.add_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
 
 
 @dp.message_handler(regexp=re.compile(r'^/b_\d+'))
@@ -54,7 +56,7 @@ async def chosen_link_series(message: types.Message):
     # Все книги серии
     global CURRENT_BOOKS_LST, CURRENT_SERIES_BOOK, series_info
     link = message.text.replace('_', '/')
-    url = f'http://flibusta.is{link}?page='
+    url = f'http://flibusta.is{link}?pages='
     soup = await get(url)
 
     series_books_dict = await series_books(link)  # Все книги выбранной серии
@@ -88,7 +90,7 @@ async def characters_page_callback(call: types.CallbackQuery, callback_data: dic
         # Отменяем пагинацию в прошлом сообщении
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data['page'])
+    current_page = int(callback_data['pages'])
     current_page_text = get_page(
         items_list=CURRENT_BOOKS_LST, page=current_page, series_lst=series_info)
 

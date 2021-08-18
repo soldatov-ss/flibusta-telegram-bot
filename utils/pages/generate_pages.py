@@ -1,4 +1,4 @@
-from utils.strings import book_strings, author_strings, author_books_strings, series_strings, series_book_strings
+from utils.pages.strings import book_strings, author_strings, author_books_strings, series_strings, series_book_strings
 
 
 def create_pages(books_dict: dict, count_items, flag) -> list:

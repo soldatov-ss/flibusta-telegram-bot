@@ -5,7 +5,7 @@ from aiogram.dispatcher.filters import Command
 
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
-from utils.pages import create_pages, get_page
+from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.general import get
 from utils.parsing.series import search_series
 from utils.throttlig import rate_limit
@@ -18,7 +18,7 @@ CURRENT_SERIES_LIST = []
 @dp.message_handler(Command('series'))
 async def series_command(message: types.Message):
     global CURRENT_SERIES, CURRENT_SERIES_LIST
-    series_name = ' '.join(message.text.split()[1:])
+    series_name = message.get_args()
 
     if not series_name:
         return await message.answer('Ничего нет 😕\n'
@@ -54,7 +54,7 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('page'))
+    current_page = int(callback_data.get('pages'))
     current_page_text = get_page(items_list=CURRENT_SERIES_LIST, page=current_page)
 
     markup = get_small_keyboard(

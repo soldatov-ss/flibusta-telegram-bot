@@ -4,8 +4,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command, CommandStart
 
 from loader import dp, db
-from utils.rating import page_rating
-
+from utils.pages.rating import page_rating
 from utils.throttlig import rate_limit
 
 
@@ -40,10 +39,8 @@ async def command_start(message: types.Message):
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
 
 
-@rate_limit(limit=4)
 @dp.message_handler(Command('rating'))
-async def rating_top_10(message: types.Message):
-    # выводим топ 10 книг по скачиваниям, с доп опциями
+async def rating(message: types.Message):
     args = message.get_args()
     if args:
         if args == 'book':
@@ -53,8 +50,24 @@ async def rating_top_10(message: types.Message):
             count = await db.select_all_users()
             return await message.answer(text=f'Всего в базе пользователей: {count}')
 
-    rating_dict = await db.select_top_10()
-    text = page_rating(rating_dict)
+
+@rate_limit(limit=4)
+@dp.message_handler(Command('rating_b'))
+async def rating_top_book(message: types.Message):
+    # Выводит топ 10 книг по скачиваниям
+    rating_dict = await db.select_top_books()
+    descr = f'ТОП 10 КНИГ'
+    text = page_rating(rating_dict, descr=descr)
+    await message.answer(text)
+
+
+@rate_limit(limit=4)
+@dp.message_handler(Command('rating_a'))
+async def rating_top_book(message: types.Message):
+    # Выводит топ 10 авторов по запросам
+    rating_dict = await db.select_top_authors()
+    descr = f'ТОП 10 АВТОРОВ'
+    text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
 
 

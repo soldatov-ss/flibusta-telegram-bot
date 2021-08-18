@@ -4,7 +4,7 @@ from aiogram import types
 
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
-from utils.pages import create_pages, get_page
+from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.books import search_books
 from utils.parsing.general import get
 
@@ -52,7 +52,7 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('page'))
+    current_page = int(callback_data.get('pages'))
     current_page_text = get_page(items_list=BOOKS_LST, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(BOOKS_LST), key=CURRENT_BOOK, page=current_page, method='book')

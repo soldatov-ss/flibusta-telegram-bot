@@ -7,7 +7,7 @@ from keyboards.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.formats import languages_call
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
-from utils.pages import create_pages, get_page
+from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.authors import search_authors, author_books
 from utils.parsing.general import get
 from utils.throttlig import rate_limit
@@ -24,7 +24,7 @@ count_books = ''
 @dp.message_handler(Command('author'))
 async def author_command(message: types.Message):
     global CURRENT_AUTHOR, AUTHORS_LST
-    author = ' '.join(message.text.split()[1:])
+    author = message.get_args()
 
     if not author:
         return await message.answer('Ничего нет 😕\n'
@@ -91,7 +91,7 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('page'))
+    current_page = int(callback_data.get('pages'))
     current_page_text = get_page(items_list=AUTHORS_LST, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(AUTHORS_LST), key=CURRENT_AUTHOR, page=current_page, method='author')
@@ -105,7 +105,7 @@ async def show_chosen(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('page'))
+    current_page = int(callback_data.get('pages'))
     current_page_text = get_page(
         items_list=AUTHOR_BOOKS_LST, author=[current_author_name, count_books], page=current_page)
     markup = get_big_keyboard(count_pages=len(AUTHOR_BOOKS_LST), key=CURRENT_AUTHOR_BOOKS,

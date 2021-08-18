@@ -56,8 +56,17 @@ class Database:
         downloaded BIGINT NOT NULL
         )
         '''
+        create_table_authors = '''
+        CREATE TABLE IF NOT EXISTS authors (
+        author_id SERIAL PRIMARY KEY,
+        author_name VARCHAR(255) NOT NULL,
+        link VARCHAR(255) NOT NULL UNIQUE,
+        queries BIGINT NOT NULL
+        )
+        '''
         await self.execute(create_table_user, execute=True)
         await self.execute(create_table_books, execute=True)
+        await self.execute(create_table_authors, execute=True)
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
@@ -77,6 +86,16 @@ class Database:
             sql = f"UPDATE books SET downloaded = {count + 1} WHERE link = '{link}'"
             await self.execute(sql, execute=True)
 
+    async def add_author(self, author: str, link: str):
+        # Добавляет автора в рейтинг, если уже есть в табл - обновляет значение
+        sql = f"INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', {1})"
+        try:
+            await self.execute(sql, execute=True)
+        except UniqueViolationError:
+            count = await self.execute(f"SElECT queries FROM authors WHERE link = '{link}'", fetchval=True)
+            sql = f"UPDATE authors SET queries = {count + 1} WHERE link = '{link}'"
+            await self.execute(sql, execute=True)
+
     async def select_all_users(self):
         count = await self.execute('SELECT count(*) FROM users', fetchval=True)
         return count
@@ -85,13 +104,24 @@ class Database:
         count = await self.execute('SELECT count(*) FROM books', fetchval=True)
         return count
 
-    async def select_top_10(self):
+    async def select_top_books(self):
         # Возвращаем топ 10 книг по скачиванию
         top = await self.execute('SELECT * FROM books ORDER BY downloaded DESC LIMIT 10', fetch=True)
         top_dict = {}
         for elem in top:
             link = elem.get('link')
             link = link[1:].replace('/', '_', 1)
-            top_dict[link] = [elem.get('book_name'), elem.get('downloaded')]
+            top_dict[link] = elem.get('book_name')
+
+        return top_dict
+
+    async def select_top_authors(self):
+        # Возвращаем топ 10 авторов по запросам
+        top = await self.execute('SELECT * FROM authors ORDER BY queries DESC LIMIT 10', fetch=True)
+        top_dict = {}
+        for elem in top:
+            link = elem.get('link')
+            link = link[1:].replace('/', '_', 1)
+            top_dict[link] = elem.get('author_name')
 
         return top_dict
