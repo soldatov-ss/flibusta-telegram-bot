@@ -4,6 +4,7 @@ from aiogram import types
 
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
+from utils.check_args import check_args
 from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.books import search_books
 from utils.parsing.general import get
@@ -16,8 +17,9 @@ CURRENT_BOOK = ''
 async def find_books(message: types.Message):
     # Эхо хендлер по названию книги, обрабатывает всё и показывает первую страницу списка
     global BOOKS_LST, CURRENT_BOOK
-    if len(message.text) <= 2:
-        return await message.reply('⛔️Слишком короткое название, попробуй еще раз')
+
+    text = check_args(message.text, 'book')  # Проверяем не пусты ли аргументы на команду /book
+    if text: return await message.answer(text)
 
     url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
     # url = f'http://flibustahezeous3.onion/booksearch?ask={message.text}&chb=on'

@@ -5,6 +5,7 @@ from aiogram.dispatcher.filters import Command
 
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
+from utils.check_args import check_args
 from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.general import get
 from utils.parsing.series import search_series
@@ -20,12 +21,8 @@ async def series_command(message: types.Message):
     global CURRENT_SERIES, CURRENT_SERIES_LIST
     series_name = message.get_args()
 
-    if not series_name:
-        return await message.answer('Ничего нет 😕\n'
-                                    'Попробуй так:\n'
-                                    '/series <i>название серии</i>')
-    if len(series_name) <= 2:
-        return await message.reply('⛔ Слишком короткое название, попробуй еще раз')
+    text = check_args(series_name, 'series')  # Проверяем не пусты ли аргументы на команду /series
+    if text: return await message.answer(text)
 
     url = f'https://flibusta.is/booksearch?ask={series_name}&chs=on'
     soup = await get(url)

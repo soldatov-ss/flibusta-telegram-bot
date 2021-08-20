@@ -8,7 +8,7 @@ from utils.pages.rating import page_rating
 from utils.throttlig import rate_limit
 
 
-@rate_limit(limit=4)
+@rate_limit(limit=3)
 @dp.message_handler(Command('help'))
 async def command_help(message: types.Message):
     text = f'❔<b>Как пользоваться ботом</b>❔\n\n' \
@@ -17,18 +17,19 @@ async def command_help(message: types.Message):
            f'/start - стартовая команда, чтобы впервые запустить бота\n' \
            f'/author <i>имя автора</i> - поиск только по авторам\n' \
            f'/series <i>название серии</i> - поиск только по названию серии\n' \
-           f'/rating - показывает ТОП 10 книг по скачиваниям\n' \
+           f'/rating_b - показывает ТОП 10 книг по скачиваниям\n' \
+           f'/rating_a - показывает ТОП 10 авторов по запросам\n' \
            f'/help - вызов справки, если ты забыл как пользоваться ботом🙃\n\n' \
            f'Например:\n' \
            f'/author Джоан Роулинг\n' \
            f'/series песнь льда и пламени\n\n' \
            f'<b>P.S.</b>\n' \
            f'Книги доступны во всех форматах для скачивания\n' \
-           f'По вопросам, недочетам и предложениям - писать: @soldatov_ss'
+           f'По всем вопросам, недочетам и предложениям - писать: @soldatov_ss'
     await message.answer(text)
 
 
-@rate_limit(limit=4)
+@rate_limit(limit=3)
 @dp.message_handler(CommandStart())
 async def command_start(message: types.Message):
     text = f'Привет, {message.from_user.full_name}! \n\nЯ помогу найти тебе любую книгу!😇\n' \
@@ -51,7 +52,7 @@ async def rating(message: types.Message):
             return await message.answer(text=f'Всего в базе пользователей: {count}')
 
 
-@rate_limit(limit=4)
+@rate_limit(limit=3)
 @dp.message_handler(Command('rating_b'))
 async def rating_top_book(message: types.Message):
     # Выводит топ 10 книг по скачиваниям
@@ -61,7 +62,7 @@ async def rating_top_book(message: types.Message):
     await message.answer(text)
 
 
-@rate_limit(limit=4)
+@rate_limit(limit=3)
 @dp.message_handler(Command('rating_a'))
 async def rating_top_book(message: types.Message):
     # Выводит топ 10 авторов по запросам

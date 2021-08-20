@@ -7,6 +7,7 @@ from keyboards.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.formats import languages_call
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp
+from utils.check_args import check_args
 from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.authors import search_authors, author_books
 from utils.parsing.general import get
@@ -20,18 +21,14 @@ current_author_name = ''
 count_books = ''
 
 
-@rate_limit(limit=4)
+@rate_limit(limit=3)
 @dp.message_handler(Command('author'))
 async def author_command(message: types.Message):
     global CURRENT_AUTHOR, AUTHORS_LST
     author = message.get_args()
 
-    if not author:
-        return await message.answer('Ничего нет 😕\n'
-                                    'Попробуй так:\n'
-                                    '/author <i>ФИО автора</i>')
-    elif len(author) <= 2:
-        return await message.answer('❗Слишком короткий запрос. Попробуй еще раз❗')
+    text = check_args(author, 'author')  # Проверяем не пусты ли аргументы на команду /author
+    if text: return await message.answer(text)
 
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
 
