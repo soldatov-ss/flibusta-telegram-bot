@@ -1,4 +1,4 @@
-ASYNC TELEGRAM BOT FLIBUSTA
+Async telegram bot
 -----
 Доступ к боту: <b>@only_flibusta_bot</b>
 _________
