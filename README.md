@@ -23,6 +23,6 @@ _____________
 -/rating user - общее кол-во пользователей, которые запускали бота;\
 __________
 
-<img src=screenshots/scr1.jpg width="167"/> , <img src=screenshots/scr3.jpg width="200"/>
-<img src=screenshots/scr4.jpg width="200"/> 
-<img src=screenshots/scr2.jpg width="200"/> <img src=screenshots/scr5.jpg width="150"/> 
+<img src=screenshots/scr1.jpg width="222"/> , <img src=screenshots/scr3.jpg width="250"/>
+<img src=screenshots/scr4.jpg width="250"/> 
+<img src=screenshots/scr2.jpg width="250"/> <img src=screenshots/scr5.jpg width="209"/> 
