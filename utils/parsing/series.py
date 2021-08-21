@@ -16,7 +16,10 @@ def find_pagination(soup):
 
 def search_series(soup):
     # Ищем все серии по запросу
-    res = soup.find('div', id='main').find('h3').find_next().find_all('li')
+    try:
+        res = soup.find('div', id='main').find('h3').find_next().find_all('li')
+    except AttributeError:
+        return None
     series_dict = {}
     for li in res:
         link = li.find('a').get('href')

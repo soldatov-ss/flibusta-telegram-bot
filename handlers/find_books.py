@@ -54,8 +54,10 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('pages'))
+    current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=BOOKS_LST, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(BOOKS_LST), key=CURRENT_BOOK, page=current_page, method='book')
+
     await call.message.edit_text(current_page_text, reply_markup=markup)
+    await call.answer()

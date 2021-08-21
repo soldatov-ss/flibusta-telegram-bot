@@ -1,6 +1,9 @@
 def search_authors(soup):
     # Ищем всех авторов по запросу
-    res = soup.find('div', id='main').find('h3').find_next().find_all('li')
+    try:
+        res = soup.find('div', id='main').find('h3').find_next().find_all('li')
+    except AttributeError:
+        return None
     authors_dict = {}
     for li in res:
         link = li.find('a').get('href')

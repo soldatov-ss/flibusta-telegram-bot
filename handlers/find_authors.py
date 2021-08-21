@@ -33,12 +33,12 @@ async def author_command(message: types.Message):
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
 
     soup = await get(url)
-    try:
-        authors_dict, count_authors = search_authors(soup)
-    except AttributeError:
+    if not search_authors(soup):
         return await message.answer('Ничего не найдено 😔\n'
                                     'Возможно ты ввел неправильно ФИО автора\n'
                                     'Попробуй еще раз 😊')
+    else:
+        authors_dict, count_authors = search_authors(soup)
 
     AUTHORS_LST = create_pages(authors_dict, count_authors, 'authors')
     current_page = get_page(AUTHORS_LST)
@@ -72,7 +72,7 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
     await call.message.answer(current_page,
                               reply_markup=get_big_keyboard(count_pages=len(AUTHOR_BOOKS_LST),
                                                             key=CURRENT_AUTHOR_BOOKS, method='author_books'))
-    await call.answer(cache_time=60)
+    await call.answer()
 
 
 @dp.callback_query_handler(pagination_call.filter(page='current_page'))
@@ -88,10 +88,11 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('pages'))
+    current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=AUTHORS_LST, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(AUTHORS_LST), key=CURRENT_AUTHOR, page=current_page, method='author')
+    await call.answer()
     await call.message.edit_text(text=current_page_text, reply_markup=markup)
 
 
@@ -102,9 +103,10 @@ async def show_chosen(call: types.CallbackQuery, callback_data: dict):
         # Блокировка в предыдущем сообщении паганиции
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data.get('pages'))
+    current_page = int(callback_data.get('page'))
     current_page_text = get_page(
         items_list=AUTHOR_BOOKS_LST, author=[current_author_name, count_books], page=current_page)
     markup = get_big_keyboard(count_pages=len(AUTHOR_BOOKS_LST), key=CURRENT_AUTHOR_BOOKS,
                               page=current_page, method='author_books')
+    await call.answer()
     await call.message.edit_text(text=current_page_text, reply_markup=markup)

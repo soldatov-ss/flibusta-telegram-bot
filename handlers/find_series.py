@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
-from loader import dp
+from loader import dp, bot
 from utils.check_args import check_args
 from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.general import get
@@ -27,12 +27,12 @@ async def series_command(message: types.Message):
     url = f'https://flibusta.is/booksearch?ask={series_name}&chs=on'
     soup = await get(url)
 
-    try:
-        series_dict, count_series = search_series(soup)
-    except AttributeError:
+    if not search_series(soup):
         return await message.answer('Ничего не найдено 😔\n'
                                     'Возможно ты ввел неправильно название серии\n'
                                     'Попробуй еще раз 😊')
+    else:
+        series_dict, count_series = search_series(soup)
 
     CURRENT_SERIES_LIST = create_pages(books_dict=series_dict, count_items=count_series, flag='series')
     CURRENT_SERIES = hashlib.md5(
@@ -56,4 +56,5 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 
     markup = get_small_keyboard(
         count_pages=len(CURRENT_SERIES_LIST), key=CURRENT_SERIES, page=current_page, method='series')
+    await call.answer()
     await call.message.edit_text(current_page_text, reply_markup=markup)

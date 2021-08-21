@@ -90,7 +90,7 @@ async def characters_page_callback(call: types.CallbackQuery, callback_data: dic
         # Отменяем пагинацию в прошлом сообщении
         return await call.answer(cache_time=60)
 
-    current_page = int(callback_data['pages'])
+    current_page = int(callback_data['page'])
     current_page_text = get_page(
         items_list=CURRENT_BOOKS_LST, page=current_page, series_lst=series_info)
 
