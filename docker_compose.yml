@@ -1,0 +1,42 @@
+version: '3.1'
+
+services:
+  db:
+    # ВНИМАТЕЛЬНО! ВОТ ЭТО НАЗВАНИЕ СЕРВИСА - db - ДОЛЖНО БЫТЬ УКАЗАНО В БОТЕ КАК host В ПОДКЛЮЧЕНИИ К БАЗЕ ИЗ БОТА
+    # ТО ЕСТЬ НЕ АЙПИШНИК И НЕ ЛОКАЛХОСТ, А db
+    # DB_HOST: db
+    container_name: database
+    image: sameersbn/postgresql:10-2
+    env_file:
+       - ".env"
+    environment:
+      DB_PASS: $DB_PASS
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - botnet
+    volumes:
+      - ./postgres:/var/lib/postgresql
+
+  tgbot:
+    container_name: bot
+    build:
+      context: .
+    command: python app.py
+    networks:
+      - botnet
+    restart: always
+    env_file:
+      - ".env"
+    volumes:
+      - .:/src
+    # Бот стартует после запуска базы
+    depends_on:
+      - db
+
+# указываются используемые сети
+networks:
+  botnet:
+    # указывается драйвер сети
+    driver: bridge
