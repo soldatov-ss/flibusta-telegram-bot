@@ -23,7 +23,7 @@ async def get(url):
         async with session.post(url_to_register, headers=headers, data=data):  # Авторизация на сайте
             async with session.get(url, headers=headers) as response:
                 res = await response.text()
-                soup = BeautifulSoup(res, 'lxml')
+                soup = BeautifulSoup(res, 'html.parser')  # поменять потом на LXML !!!!!!!
                 return soup
 
 
@@ -38,3 +38,11 @@ async def get_tempfile(url):
                     fp.write(await response.read())
                     fp.seek(0)
                     return fp
+
+
+async def get_without_register(url):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            res = await response.text()
+            soup = BeautifulSoup(res, 'html.parser')  # поменять потом на LXML !!!!!!!
+            return soup

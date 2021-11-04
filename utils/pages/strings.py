@@ -16,7 +16,6 @@ def book_strings(count_books, author, book, link):
 
     other_text = f'📖 <b>{book}</b> -- <i>{author}</i> \n' \
                  f'⬇ Скачать: /{link}\n\n'
-
     return first_text, other_text
 
 

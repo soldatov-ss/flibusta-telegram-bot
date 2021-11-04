@@ -10,6 +10,7 @@ def search_books(soup):
 
     for li in ul:
         book = li.find_all('a')[0].text
+        book = book.replace("'", '_')
         link = li.find('a').get('href')
         try:
             author = li.find_all('a')[1].text

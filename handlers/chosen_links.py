@@ -5,10 +5,11 @@ from aiogram import types
 from keyboards.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.formats import get_language, get_formats
 from loader import dp, db
+from utils.misc import check_link
 from utils.pages.generate_pages import create_pages, get_page
 from utils.parsing.authors import languages
 from utils.parsing.books import parsing_formats, description
-from utils.parsing.general import get
+from utils.parsing.general import get, get_without_register
 from utils.parsing.series import series_books, description_series
 
 CURRENT_BOOKS_LST = []
@@ -16,12 +17,11 @@ CURRENT_SERIES_BOOK = ''
 series_info = []
 
 
-@dp.message_handler(regexp=re.compile(r'^/a_\d+'))
+@dp.message_handler(regexp=re.compile(r'(^/a_\d+)|(^/a_\d+@)'))
 async def chosen_link_author(message: types.Message):
     # Ловим линк и выводим доступные варинаты языков на которых написаны книги
-    link = message.text.replace('_', '/')
+    link = check_link(message.text)
     url = f'http://flibusta.is{link}&lang='
-    # url = f'http://flibustahezeous3.onion{link}'
 
     soup = await get(url)
     abbr_lst, languages_lst, author = languages(soup)
@@ -33,16 +33,15 @@ async def chosen_link_author(message: types.Message):
     await db.add_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
 
 
-@dp.message_handler(regexp=re.compile(r'^/b_\d+'))
+@dp.message_handler(regexp=re.compile(r'(^/b_\d+)|(^/b_\d+@.+)'))
 async def chosen_link_book(message: types.Message):
     # Ловим линк и выводим доступные форматы для скачивания
-    link = message.text.replace('_', '/')
+    link = check_link(message.text)  # обрезаем лишнее в ссылке
     url = f'http://flibusta.is{link}'
-    # url = f'http://flibustahezeous3.onion{link}'
     soup = await get(url)
+
     formats_list = parsing_formats(soup)
     descr, author, book = description(soup)
-
     text = f'Автор: <b>{author}</b>\n\n' \
            f'📖 <b>{book}</b>\n\n' \
            f'Описание: \n' \
@@ -51,11 +50,11 @@ async def chosen_link_book(message: types.Message):
                          reply_markup=get_formats(formats_lst=formats_list, link=link))
 
 
-@dp.message_handler(regexp=re.compile(r'^/sequence_\d+'))
+@dp.message_handler(regexp=re.compile(r'(^/sequence_\d+)|(^/sequence_\d+@)'))
 async def chosen_link_series(message: types.Message):
     # Все книги серии
     global CURRENT_BOOKS_LST, CURRENT_SERIES_BOOK, series_info
-    link = message.text.replace('_', '/')
+    link = check_link(message.text)
     url = f'http://flibusta.is{link}?pages='
     soup = await get(url)
 
