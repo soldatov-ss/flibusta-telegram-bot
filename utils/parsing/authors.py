@@ -22,8 +22,9 @@ def author_books(soup):
         for item in items.find_all('a'):
             link = item.get('href')
             if link.startswith('/b/') and not link.endswith(('download', 'read', 'mail')):
-                books_dict[link] = item.text
-    return books_dict, author
+                if item.text not in ('(fb2)', '(epub)', '(mobi)'):
+                    books_dict[link] = item.text
+    return books_dict, len(books_dict.keys()), author
 
 
 def languages(soup):

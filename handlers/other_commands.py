@@ -71,6 +71,14 @@ async def rating_top_book(message: types.Message):
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
 
+@dp.message_handler(Command('delete'))
+async def delete_table(message: types.Message):
+    args = message.get_args()
+    if args == 'admin':
+        await db.delete_table_pages()
+        await db.create_tables()
+    return await message.answer('Таблица pages была удалена!')
+
 
 @dp.message_handler(regexp=re.compile(r'^/.+'))
 async def other_command(message: types.Message):
@@ -79,3 +87,6 @@ async def other_command(message: types.Message):
            f'Попробуй еще раз\n' \
            f'Либо можешь ознакомится со справкой 👉 /help'
     return await message.answer(text)
+
+
+

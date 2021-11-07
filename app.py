@@ -6,7 +6,7 @@ async def on_startup(dispatcher):
     import middlewares, handlers
     from utils.set_bot_command import set_default_commands
     await db.create()
-    await db.create_table_users()
+    await db.create_tables()
     await set_default_commands(dp)
 
 

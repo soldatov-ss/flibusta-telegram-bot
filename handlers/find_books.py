@@ -25,12 +25,12 @@ async def find_books(message: types.Message):
         current_book_hash = hashlib.md5(
             current_book.encode()).hexdigest()  # Хешируем, чтобы обойти ограничение в 64 байта для CallbackData
 
-        await db.add_new_pages(books_pages, current_book_hash)
         current_page_text = get_page(items_list=books_pages)
 
         await message.answer(current_page_text,
                              reply_markup=get_small_keyboard(
                                  count_pages=len(books_pages), key=current_book_hash, method='book'))
+        await db.add_new_pages(books_pages, current_book_hash)
 
 
 @dp.callback_query_handler(pagination_call.filter(page='current_page'))
@@ -44,13 +44,13 @@ async def current_page_error(call: types.CallbackQuery):
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_book, book = await db.find_pages(callback_data['key'])
+        current_book, books_lst = await db.find_pages(callback_data['key'])
     except TypeError:
         return await call.answer(cache_time=60)
 
     current_page = int(callback_data.get('page'))
-    current_page_text = get_page(items_list=book, page=current_page)
+    current_page_text = get_page(items_list=books_lst, page=current_page)
 
-    markup = get_small_keyboard(count_pages=len(book), key=current_book, page=current_page, method='book')
+    markup = get_small_keyboard(count_pages=len(books_lst), key=current_book, page=current_page, method='book')
     await call.message.edit_text(current_page_text, reply_markup=markup)
     await call.answer()

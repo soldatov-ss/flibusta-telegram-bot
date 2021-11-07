@@ -53,7 +53,7 @@ def get_page(items_list, page: int = 1, author=None, series_lst=None):
     if author:  # Добавляем шапку на страницу с книгами авторов
         author, count_books = author
         text = f'<b>{author}</b>\n\n' \
-               f'Книг найдено: <b>{count_books}</b>  🔍\n\n'
+               f'📚Книг найдено: <b>{count_books}</b>  🔍\n\n'
         if text not in items_list[page_index][0]:
             items_list[page_index] = [text + '' + items_list[page_index][0]]
 
