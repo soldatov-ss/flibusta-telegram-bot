@@ -51,13 +51,19 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
         author_books_dict, count_author_books, group_or_bot, author_name = author_books_info
         author_books_pages = create_pages(author_books_dict, count_items=count_author_books, flag='author_books')
 
-        current_author_link = group_or_bot + link
+        current_author_link = group_or_bot + link + language
         current_page = get_page(author_books_pages, author=[author_name, count_author_books])
         await call.message.answer(current_page,
                                   reply_markup=get_big_keyboard(count_pages=len(author_books_pages),
                                                                 key=current_author_link, method='author_books'))
-        await db.add_new_pages(author_books_pages, current_author_link, count_author_books, author=author_name)
+        await db.add_new_author_pages(author_books_pages, current_author_link, count_author_books, author_name)
         await call.answer()
+
+
+@dp.callback_query_handler(big_pagination.filter(page='current_page'))
+async def current_page_error(call: types.CallbackQuery):
+    # убираем часики по нажанию на текущую страницу
+    await call.answer(cache_time=60)
 
 
 @dp.callback_query_handler(pagination_call.filter(page='current_page'))
@@ -74,6 +80,7 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
         current_author, authors_lst = await db.find_pages(callback_data['key'])
     except TypeError:
         return await call.answer(cache_time=60)
+
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=authors_lst, page=current_page)
 
@@ -87,7 +94,7 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 async def show_chosen(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_author_link, author_books_lst, author_name, count_books = await db.find_pages(callback_data['key'])
+        current_author_link, author_books_lst, author_name, count_books = await db.author_pages(callback_data['key'])
     except TypeError:
         return await call.answer(cache_time=60)
 

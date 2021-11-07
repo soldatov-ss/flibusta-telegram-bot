@@ -8,7 +8,6 @@ def check_link(link):
     # /b_101112@my_flibusta_bot
     link = link.replace('_', '/')
     if '@' in link:
-        print(link.find('@'))
         link = link[:link.find('@')]
     # /b/101112
     return link

@@ -65,8 +65,15 @@ class Database:
         )
         '''
         # Таблица для хранения страниц с результатами запросов и названиями запросов
-        create_table_pages = '''
+        create_table_book_pages = '''
         CREATE TABLE IF NOT EXISTS pages (
+        pages_id SERIAL PRIMARY KEY,
+        request_name VARCHAR(255) NOT NULL UNIQUE,
+        book_pages text[]
+        )
+        '''
+        create_table_author_books_pages = '''
+        CREATE TABLE IF NOT EXISTS author_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
         author_name VARCHAR(255),
@@ -77,7 +84,8 @@ class Database:
         await self.execute(create_table_user, execute=True)
         await self.execute(create_table_books, execute=True)
         await self.execute(create_table_authors, execute=True)
-        await self.execute(create_table_pages, execute=True)
+        await self.execute(create_table_book_pages, execute=True)
+        await self.execute(create_table_author_books_pages, execute=True)
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
@@ -140,21 +148,40 @@ class Database:
     #
     # Функции для массивов
     #
-    async def add_new_pages(self, items, request_name, count_books=None, author=None):
-        if author:
-            sql = f"INSERT INTO pages(request_name,  author_name, сount_books, book_pages) " \
-                  f"VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])"
-        else:
-            sql = f"INSERT INTO pages(request_name, book_pages) VALUES ('{request_name}', ARRAY[{items}])"
+    async def add_new_pages(self, items, request_name):
+        sql = f"INSERT INTO pages(request_name, book_pages) VALUES ('{request_name}', ARRAY[{items}])"
+
+        try:
+            await self.execute(sql, execute=True)
+        except UniqueViolationError:
+            pass
+
+    async def add_new_author_pages(self, items, request_name, count_books=None, author=None):
+        sql = f"""INSERT INTO author_pages(request_name, author_name, сount_books, book_pages)
+                    VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])"""
         try:
             await self.execute(sql, execute=True)
         except UniqueViolationError:
             pass
 
     async def find_pages(self, request_name):
-        sql = f"SELECT request_name, author_name, book_pages, сount_books FROM pages WHERE request_name = '{request_name}'"
+        sql = f"SELECT request_name, book_pages FROM pages WHERE request_name = '{request_name}'"
+        res = await self.execute(sql, fetch=True)
         try:
-            res = await self.execute(sql, fetch=True)
+            name = res[0].get('request_name')
+            res_lst = res[0].get('book_pages')
+            res_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
+                       res_lst[0]]  # убираем экранирование с postgresql
+
+        except IndexError:
+            return
+        else:
+            return name, res_lst
+
+    async def author_pages(self, request_name):
+        sql = f"SELECT request_name, author_name, book_pages, сount_books FROM author_pages WHERE request_name = '{request_name}'"
+        res = await self.execute(sql, fetch=True)
+        try:
             name = res[0].get('request_name')
             res_lst = res[0].get('book_pages')
             res_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
@@ -164,10 +191,7 @@ class Database:
         except IndexError:
             return
         else:
-            if author_name:
-                return name, res_lst, author_name, count_books
-            else:
-                return name, res_lst
+            return name, res_lst, author_name, count_books
 
     async def delete_table_pages(self):
         return await self.execute(f'DROP TABLE pages', execute=True)
