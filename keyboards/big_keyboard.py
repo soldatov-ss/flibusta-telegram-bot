@@ -1,8 +1,17 @@
 # Инлайн клавиатура для показа книг из серий т.к. их может быть больше 50 шт
+from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
+from loader import dp
+
 big_pagination = CallbackData('big_pagination', 'key', 'page', 'method')
+
+
+@dp.callback_query_handler(big_pagination.filter(page='current_page'))
+async def current_page_error(call: types.CallbackQuery):
+    # убираем часики по нажанию на текущую страницу
+    await call.answer(cache_time=60)
 
 
 # Большая пагинация

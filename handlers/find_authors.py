@@ -60,18 +60,6 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
         await call.answer()
 
 
-@dp.callback_query_handler(big_pagination.filter(page='current_page'))
-async def current_page_error(call: types.CallbackQuery):
-    # убираем часики по нажанию на текущую страницу
-    await call.answer(cache_time=60)
-
-
-@dp.callback_query_handler(pagination_call.filter(page='current_page'))
-async def current_page_error(call: types.CallbackQuery):
-    # убираем часики по нажанию на текущую страницу
-    await call.answer(cache_time=60)
-
-
 # Пагинация при показе всех доступных авторов
 @dp.callback_query_handler(pagination_call.filter(method='author'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):

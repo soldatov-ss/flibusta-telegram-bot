@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils.parsing.general import get
+from utils.parsing.general import get, get_without_register
 
 
 def find_pagination(soup):
@@ -29,17 +29,19 @@ def search_series(soup):
     return series_dict, count_series
 
 
-async def series_books(link):
+async def series_books(soup, group_or_bot, link):
     # Ищем все книги в выбранной серии
-    url = f'http://flibusta.is{link}?page={0}'
-    soup = await get(url)
     pagination_lst = find_pagination(soup)
     series_dict = {}
     if pagination_lst is not None:
         # Если есть пагинация - добавляем все книги со всех страниц
         for page in pagination_lst:
             url = f'http://flibusta.is{link}?page={page}'
-            soup = await get(url)
+            if group_or_bot == 'group':
+                soup = await get(url)
+            else:
+                soup = await get_without_register(url)
+
             res = soup.find('div', id='main').find_all('form', action='/mass/download')
             for items in res:
                 for item in items.find_all('a'):
@@ -54,7 +56,7 @@ async def series_books(link):
                 if link.startswith('/b/') and not link.endswith(('download', 'read', 'mail')):
                     series_dict[link] = item.text
     # series_dict = {link: series_name}
-    return series_dict
+    return series_dict, len(series_dict.keys())
 
 
 def description_series(soup):

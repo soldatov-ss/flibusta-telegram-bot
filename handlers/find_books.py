@@ -33,12 +33,6 @@ async def find_books(message: types.Message):
         await db.add_new_pages(books_pages, current_book_hash)
 
 
-@dp.callback_query_handler(pagination_call.filter(page='current_page'))
-async def current_page_error(call: types.CallbackQuery):
-    # убираем часики по нажанию на текущую страницу
-    await call.answer(cache_time=60)
-
-
 # Пагинация
 @dp.callback_query_handler(pagination_call.filter(method='book'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):

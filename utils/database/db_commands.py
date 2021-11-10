@@ -81,11 +81,23 @@ class Database:
         book_pages text[]
         )
         '''
+
+        create_table_series_books_pages = '''
+        CREATE TABLE IF NOT EXISTS series_pages (
+        pages_id SERIAL PRIMARY KEY,
+        request_name VARCHAR(255) NOT NULL UNIQUE,
+        series_name VARCHAR(255),
+        series_author VARCHAR(255), 
+        series_genres VARCHAR(255),
+        book_pages text[]
+        )
+        '''
         await self.execute(create_table_user, execute=True)
         await self.execute(create_table_books, execute=True)
         await self.execute(create_table_authors, execute=True)
         await self.execute(create_table_book_pages, execute=True)
         await self.execute(create_table_author_books_pages, execute=True)
+        await self.execute(create_table_series_books_pages, execute=True)
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
@@ -164,34 +176,52 @@ class Database:
         except UniqueViolationError:
             pass
 
+    async def add_new_series_pages(self, items, request_name, series_name, series_author, series_genres):
+        sql = f"""INSERT INTO series_pages(request_name, series_name, series_author, series_genres, book_pages)
+                    VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])"""
+        try:
+            await self.execute(sql, execute=True)
+        except UniqueViolationError:
+            pass
+
     async def find_pages(self, request_name):
         sql = f"SELECT request_name, book_pages FROM pages WHERE request_name = '{request_name}'"
         res = await self.execute(sql, fetch=True)
-        try:
-            name = res[0].get('request_name')
-            res_lst = res[0].get('book_pages')
-            res_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                       res_lst[0]]  # убираем экранирование с postgresql
+        if not res: return
 
-        except IndexError:
-            return
-        else:
-            return name, res_lst
+        name = res[0].get('request_name')
+        book_pages = res[0].get('book_pages')
+        book_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
+                      book_pages[0]]  # убираем экранирование с postgresql
+
+        return name, book_pages
 
     async def author_pages(self, request_name):
         sql = f"SELECT request_name, author_name, book_pages, сount_books FROM author_pages WHERE request_name = '{request_name}'"
         res = await self.execute(sql, fetch=True)
-        try:
-            name = res[0].get('request_name')
-            res_lst = res[0].get('book_pages')
-            res_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                       res_lst[0]]  # убираем экранирование с postgresql
-            author_name = res[0].get('author_name')
-            count_books = res[0].get('сount_books')
-        except IndexError:
-            return
-        else:
-            return name, res_lst, author_name, count_books
+        if not res: return
+
+        name = res[0].get('request_name')
+        pages_lst = res[0].get('book_pages')
+        pages_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
+                     pages_lst[0]]  # убираем экранирование с postgresql
+        author_name = res[0].get('author_name')
+        count_books = res[0].get('сount_books')
+
+        return name, pages_lst, author_name, count_books
+
+    async def series_pages(self, request_name):
+        sql = f"SELECT request_name, series_name, series_author, series_genres, book_pages FROM series_pages WHERE request_name = '{request_name}'"
+        res = await self.execute(sql, fetch=True)
+        if not res: return
+
+        name = res[0].get('request_name')
+        series_pages = res[0].get('book_pages')
+        series_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
+                   series_pages[0]]  # убираем экранирование с postgresql
+        series_info = [res[0].get('series_name'), res[0].get('series_author'), res[0].get('series_genres')]
+
+        return name, series_pages, series_info
 
     async def delete_table_pages(self):
-        return await self.execute(f'DROP TABLE pages', execute=True)
+        return await self.execute(f'DROP TABLE pages, author_pages, series_pages', execute=True)

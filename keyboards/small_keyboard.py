@@ -1,7 +1,16 @@
+from aiogram import types
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
+from loader import dp
+
 pagination_call = CallbackData('pagination', 'key', 'page', 'method')
+
+
+@dp.callback_query_handler(pagination_call.filter(page='current_page'))
+async def current_page_error(call: types.CallbackQuery):
+    # убираем часики по нажанию на текущую страницу
+    await call.answer(cache_time=60)
 
 
 def get_small_keyboard(count_pages: int, key, method, page: int = 1):
