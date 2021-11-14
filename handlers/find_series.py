@@ -8,9 +8,10 @@ from keyboards.big_keyboard import big_pagination, get_big_keyboard
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
-from utils.misc import check_group_or_bot_for_series, check_link, check_group_or_bot_for_series_books
+from utils.misc import check_link, check_group_or_bot_for_series_books, \
+    check_group_or_bot
 from utils.pages.generate_pages import create_pages, get_page
-from utils.parsing.series import description_series
+from utils.parsing.series import description_series, search_series
 from utils.throttlig import rate_limit
 
 
@@ -25,7 +26,7 @@ async def series_command(message: types.Message):
 
     url = f'https://flibusta.is/booksearch?ask={series_name}&chs=on'
 
-    series_info = await check_group_or_bot_for_series(message.chat.id, url)
+    series_info = await check_group_or_bot(message.chat.id, url, func=search_series, method='series')
     if series_info:
         series_dict, count_series, group_or_bot = series_info
         series_pages = create_pages(books_dict=series_dict, count_items=count_series, flag='series')

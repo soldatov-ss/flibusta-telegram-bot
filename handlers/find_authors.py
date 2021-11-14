@@ -8,8 +8,9 @@ from keyboards.formats import languages_call
 from keyboards.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
-from utils.misc import check_group_or_bot_for_author, check_group_or_bot_for_author_books
+from utils.misc import check_group_or_bot_for_author_books, check_group_or_bot
 from utils.pages.generate_pages import create_pages, get_page
+from utils.parsing.authors import search_authors
 from utils.throttlig import rate_limit
 
 
@@ -21,7 +22,7 @@ async def author_command(message: types.Message):
     if text: return await message.answer(text)
 
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
-    authors_info = await check_group_or_bot_for_author(message.chat.id, url)
+    authors_info = await check_group_or_bot(message.chat.id, url, func=search_authors, method='authors')
 
     if authors_info:
         authors_dict, count_authors, group_or_bot = authors_info

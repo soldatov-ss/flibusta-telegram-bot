@@ -7,7 +7,7 @@ def search_authors(soup):
     authors_dict = {}
     for li in res:
         link = li.find('a').get('href')
-        author = li.text
+        author = li.text.replace("'", '"')  # убираем можно было добавить в БД
         authors_dict[link] = author
     count_authors = len(authors_dict.keys())
     return authors_dict, count_authors
@@ -24,7 +24,7 @@ def author_books(soup):
             if link.startswith('/b/') and not link.endswith(('download', 'read', 'mail')):
                 if item.text not in ('(fb2)', '(epub)', '(mobi)'):
                     if item.text.find("'") != -1:  # Проверка, чтобы можно было добавить в БД без ошибок
-                        item_text = item.text.replace("'", '-')
+                        item_text = item.text.replace("'", '"')
                         books_dict[link] = item_text
                     else:
                         books_dict[link] = item.text

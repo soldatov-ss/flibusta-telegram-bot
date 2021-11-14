@@ -23,7 +23,7 @@ def search_series(soup):
     series_dict = {}
     for li in res:
         link = li.find('a').get('href')
-        series = li.text
+        series = li.text.replace("'", '"')
         series_dict[link] = series
     count_series = len(series_dict.keys())
     return series_dict, count_series
@@ -47,14 +47,14 @@ async def series_books(soup, group_or_bot, link):
                 for item in items.find_all('a'):
                     href = item.get('href')
                     if href.startswith('/b/') and not href.endswith(('download', 'read', 'mail')):
-                        series_dict[href] = item.text
+                        series_dict[href] = item.text.replace("'", '"')
     else:
         res = soup.find('div', id='main').find_all('form', action='/mass/download')
         for items in res:
             for item in items.find_all('a'):
                 link = item.get('href')
                 if link.startswith('/b/') and not link.endswith(('download', 'read', 'mail')):
-                    series_dict[link] = item.text
+                    series_dict[link] = item.text.replace("'", '"')
     # series_dict = {link: series_name}
     return series_dict, len(series_dict.keys())
 
@@ -62,8 +62,8 @@ async def series_books(soup, group_or_bot, link):
 def description_series(soup):
     # Ищем название серии, авторов, жанры
     res = soup.find('div', id='main').find_all('tbody')[1].find_all('tr')
-    name = soup.find('h1', class_='title').text
-    authors = res[1].text
-    genres = res[-1].text
+    name = soup.find('h1', class_='title').text.replace("'", '"')
+    authors = res[1].text.replace("'", '"')
+    genres = res[-1].text.replace("'", '"')
 
     return name, authors, genres

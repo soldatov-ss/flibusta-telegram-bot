@@ -7,6 +7,7 @@ from loader import dp, db
 from utils.check_args import check_args
 from utils.misc import check_group_or_bot
 from utils.pages.generate_pages import create_pages, get_page
+from utils.parsing.books import search_books
 
 
 @dp.message_handler()
@@ -16,7 +17,7 @@ async def find_books(message: types.Message):
     if text: return await message.answer(text)
     url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
 
-    books_info = await check_group_or_bot(message.chat.id, url)
+    books_info = await check_group_or_bot(message.chat.id, url, func=search_books, method='books')
     if books_info:
         books_dict, count_books, group_or_bot = books_info
         books_pages = create_pages(books_dict, count_books, 'books')  # Общий список книг

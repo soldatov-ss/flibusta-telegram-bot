@@ -77,7 +77,7 @@ async def delete_table(message: types.Message):
     if args == 'admin':
         await db.delete_table_pages()
         await db.create_tables()
-    return await message.answer('Таблица pages была удалена!')
+    return await message.answer('Таблицы были удалены!')
 
 
 @dp.message_handler(regexp=re.compile(r'^/.+'))
