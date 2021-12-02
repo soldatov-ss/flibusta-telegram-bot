@@ -2,12 +2,12 @@ import re
 
 from aiogram import types
 
-from keyboards.formats import get_language, get_formats
+from keyboards.inline.formats import get_language, get_formats
 from loader import dp, db
 from utils.misc import check_link
 from utils.parsing.authors import languages
 from utils.parsing.books import parsing_formats, description
-from utils.parsing.general import get
+from utils.parsing.general import get, get_without_register
 
 
 @dp.message_handler(regexp=re.compile(r'(^/a_\d+)|(^/a_\d+@)'))
@@ -16,7 +16,11 @@ async def chosen_link_author(message: types.Message):
     link = check_link(message.text)
     url = f'http://flibusta.is{link}&lang='
 
-    soup = await get(url)
+    if message.chat.id == 415348636:  # чат айди бота
+        soup = await get_without_register(url)
+    else:
+        soup = await get(url)
+
     abbr_lst, languages_lst, author = languages(soup)
     text = f'Книги доступны на следующих языках: \n' \
            f'Ты можешь выбрать удобный для тебя язык 👇'

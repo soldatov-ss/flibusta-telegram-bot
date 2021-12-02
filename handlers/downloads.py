@@ -4,7 +4,7 @@ from aiogram import types
 from aiogram.types import InputFile
 from aiogram.utils.exceptions import NetworkError, InvalidQueryID
 
-from keyboards.formats import files_call
+from keyboards.inline.formats import files_call
 from loader import dp, db
 from utils.parsing.books import description
 from utils.parsing.general import get, get_tempfile

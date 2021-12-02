@@ -3,9 +3,9 @@ import hashlib
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from keyboards.big_keyboard import get_big_keyboard, big_pagination
-from keyboards.formats import languages_call
-from keyboards.small_keyboard import get_small_keyboard, pagination_call
+from keyboards.inline.big_keyboard import get_big_keyboard, big_pagination
+from keyboards.inline.formats import languages_call
+from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
 from utils.misc import check_group_or_bot_for_author_books, check_group_or_bot
@@ -28,7 +28,7 @@ async def author_command(message: types.Message):
         authors_dict, count_authors, group_or_bot = authors_info
         authors_pages = create_pages(authors_dict, count_authors, 'authors')  # Общий список книг
 
-        current_author = group_or_bot + message.text.title()
+        current_author = group_or_bot + author.title()
         current_author_hash = hashlib.md5(
             current_author.encode()).hexdigest()
         current_page_text = get_page(items_list=authors_pages)

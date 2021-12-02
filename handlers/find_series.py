@@ -4,8 +4,8 @@ import re
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 
-from keyboards.big_keyboard import big_pagination, get_big_keyboard
-from keyboards.small_keyboard import get_small_keyboard, pagination_call
+from keyboards.inline.big_keyboard import big_pagination, get_big_keyboard
+from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
 from utils.misc import check_link, check_group_or_bot_for_series_books, \
@@ -54,7 +54,6 @@ async def chosen_link_series(message: types.Message):
         series_info = [series_name, series_author, series_genres]
 
         current_series_link = group_or_bot + link
-
         series_pages = create_pages(series_book_dict, count_items=count_books, flag='series_books')
         current_page_text = get_page(items_list=series_pages, series_lst=series_info)
 

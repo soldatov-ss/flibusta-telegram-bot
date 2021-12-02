@@ -22,34 +22,37 @@ async def command_help(message: types.Message):
            f'/help - вызов справки, если ты забыл как пользоваться ботом🙃\n\n' \
            f'Например:\n' \
            f'/author Джоан Роулинг\n' \
-           f'/series песнь льда и пламени\n\n' \
+           f'/author Пушкин\n' \
+           f'/series песнь льда и пламени\n' \
+           f'/series Голодные Игры\n\n' \
            f'<b>P.S.</b>\n' \
            f'Книги доступны во всех форматах для скачивания\n' \
-           f'По всем вопросам, недочетам и предложениям - писать: @soldatov_ss👨🏻‍💻'
+           f'По всем вопросам, недочетам и предложениям - писать: @soldatov_ss👨🏻‍💻\n' \
+           f'Моя группа без ограничений: @free_book_flibusta'
     await message.answer(text)
 
 
 @rate_limit(limit=3)
 @dp.message_handler(CommandStart())
 async def command_start(message: types.Message):
-    text = f'Привет, {message.from_user.full_name}! \n\nЯ помогу найти тебе любую книгу!😇\n' \
-           f'Чтобы начать, пришли мне название книги 📖\n\n' \
-           f'Я также могу производить поиск по ФИО автора или названию книжной серии ☺\n' \
-           f'Ты можешь узнать больше обо мне здесь 👉 /help\n'
+    if message.chat.id == '415348636':
+        text = f'Привет, {message.from_user.full_name}! \n\nЯ помогу найти тебе любую книгу!😇\n' \
+               f'Чтобы начать, пришли мне название книги 📖\n\n' \
+               f'Я также могу производить поиск по ФИО автора или названию книжной серии ☺\n' \
+               f'Ты можешь узнать больше обо мне здесь 👉 /help\n'
+    else:
+        text = f'Привет, {message.from_user.full_name}! \n\n' \
+               f'Я помогу найти тебе любую книгу!😇\n' \
+               f'Чтобы начать, пришли мне название книги 📖\n\n' \
+               f'Я также могу производить поиск по ФИО автора или названию книжной серии ☺\n' \
+               f'Ты можешь узнать больше обо мне здесь 👉 /help\n\n' \
+               f'❗ ВАЖНАЯ ИНФОРМАЦИЯ ❗\n' \
+               f'Чтобы бот не был заблокирован из-за нарушений прав правообладателей\n' \
+               f'Многие книги, авторы, книжные серии могут быть не доступны 😞\n\n' \
+               f'@free_book_flibusta - моя группа, где нет никаких ограничений\n'
+
     await message.answer(text)
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
-
-
-@dp.message_handler(Command('rating'))
-async def rating(message: types.Message):
-    args = message.get_args()
-    if args:
-        if args == 'book':
-            count = await db.select_all_books()
-            return await message.answer(text=f'Всего было скачано книг: {count}')
-        elif args == 'user':
-            count = await db.select_all_users()
-            return await message.answer(text=f'Всего в базе пользователей: {count}')
 
 
 @rate_limit(limit=3)
@@ -71,14 +74,6 @@ async def rating_top_book(message: types.Message):
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
 
-@dp.message_handler(Command('delete'))
-async def delete_table(message: types.Message):
-    args = message.get_args()
-    if args == 'admin':
-        await db.delete_table_pages()
-        await db.create_tables()
-    return await message.answer('Таблицы были удалены!')
-
 
 @dp.message_handler(regexp=re.compile(r'^/.+'))
 async def other_command(message: types.Message):
@@ -87,6 +82,3 @@ async def other_command(message: types.Message):
            f'Попробуй еще раз\n' \
            f'Либо можешь ознакомится со справкой 👉 /help'
     return await message.answer(text)
-
-
-

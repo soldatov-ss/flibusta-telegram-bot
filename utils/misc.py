@@ -60,7 +60,7 @@ async def check_group_or_bot_for_author_books(call, url):
 
         elif author_books(soup_without):
             text = strings_for_user_into_bot(second_message='books')
-            await bot.send_message(-1001572945629, text)
+            await bot.send_message(415348636, text)
 
             book_dict_without, count_books_without, author = author_books(soup_without)
             return book_dict_without, count_books_without, 'bot', author
@@ -74,19 +74,34 @@ async def check_group_or_bot_for_series_books(chat_id, url, link):
     soup_with = await get(url)
 
     if str(chat_id) == '415348636':
-        soup_without = await get_without_register(url)
-
-        if not await series_books(soup_without, 'bot', link) and await series_books(soup_with, 'bot', link):
-            text = strings_for_user_into_bot(danger_message=True)
-            await bot.send_message(chat_id, text)
-            return False
-        else:
-            text = strings_for_user_into_bot(second_message='series_books')
-            await bot.send_message(chat_id, text)
-
-            series_book_dict_without, count_series_books_without = await series_books(soup_without, 'bot', link)
-            return series_book_dict_without, count_series_books_without, 'bot', soup_with
+        text = strings_for_user_into_bot(second_message='books')
+        await bot.send_message(chat_id, text)
+        series_book_dict, count_series_books = await series_books(soup_with, link)
+        return series_book_dict, count_series_books, 'bot', soup_with
 
     else:
-        series_book_dict_with, count_series_books_with = await series_books(soup_with, 'group', link)
+        series_book_dict_with, count_series_books_with = await series_books(soup_with, link)
         return series_book_dict_with, count_series_books_with, 'group', soup_with
+
+
+# ??? Сделать позже новый парсер? ибо на этом без регистрации нет результата
+# async def check_group_or_bot_for_series_books(chat_id, url, link):
+#     soup_with = await get(url)
+#
+#     if str(chat_id) == '415348636':
+#         soup_without = await get_without_register(url)
+#
+#         if not await series_books(soup_without, link) and await series_books(soup_with, link):
+#             text = strings_for_user_into_bot(danger_message=True)
+#             await bot.send_message(chat_id, text)
+#             return False
+#         else:
+#             text = strings_for_user_into_bot(second_message='books')
+#             await bot.send_message(chat_id, text)
+#
+#             series_book_dict_without, count_series_books_without = await series_books(soup_without, link)
+#             return series_book_dict_without, count_series_books_without, 'bot', soup_with
+#
+#     else:
+#         series_book_dict_with, count_series_books_with = await series_books(soup_with, link)
+#         return series_book_dict_with, count_series_books_with, 'group', soup_with

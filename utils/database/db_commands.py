@@ -224,4 +224,4 @@ class Database:
         return name, series_pages, series_info
 
     async def delete_table_pages(self):
-        return await self.execute(f'DROP TABLE pages, author_pages, series_pages', execute=True)
+        await self.execute(f'DROP TABLE pages, author_pages, series_pages', execute=True)

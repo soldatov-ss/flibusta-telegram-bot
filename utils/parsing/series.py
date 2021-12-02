@@ -29,7 +29,7 @@ def search_series(soup):
     return series_dict, count_series
 
 
-async def series_books(soup, group_or_bot, link):
+async def series_books(soup, link):
     # Ищем все книги в выбранной серии
     pagination_lst = find_pagination(soup)
     series_dict = {}
@@ -37,11 +37,7 @@ async def series_books(soup, group_or_bot, link):
         # Если есть пагинация - добавляем все книги со всех страниц
         for page in pagination_lst:
             url = f'http://flibusta.is{link}?page={page}'
-            if group_or_bot == 'group':
-                soup = await get(url)
-            else:
-                soup = await get_without_register(url)
-
+            soup = await get(url)
             res = soup.find('div', id='main').find_all('form', action='/mass/download')
             for items in res:
                 for item in items.find_all('a'):

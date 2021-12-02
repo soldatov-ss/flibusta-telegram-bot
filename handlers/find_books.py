@@ -2,7 +2,7 @@ import hashlib
 
 from aiogram import types
 
-from keyboards.small_keyboard import get_small_keyboard, pagination_call
+from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
 from utils.misc import check_group_or_bot
