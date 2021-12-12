@@ -1,4 +1,5 @@
 import hashlib
+import json
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
@@ -44,9 +45,10 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
     # Вывод список доступных книг по выбранному языку
     language = callback_data['abbr']
     link = callback_data['link']
+    chat_id = json.loads(call.as_json()).get('message').get('chat')['id']
 
     url = f'http://flibusta.is{link}&lang={language}&order=p&hg1=1&hg=1&sa1=1&hr1=1'
-    author_books_info = await check_group_or_bot_for_author_books(call.as_json(), url)
+    author_books_info = await check_group_or_bot_for_author_books(chat_id, url)
 
     if author_books_info:
         author_books_dict, count_author_books, group_or_bot, author_name = author_books_info

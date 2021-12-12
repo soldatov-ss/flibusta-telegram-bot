@@ -47,20 +47,20 @@ async def check_group_or_bot(chat_id, url, func, method):
             return book_dict_with, count_books_with, 'group'
 
 
-async def check_group_or_bot_for_author_books(call, url):
+async def check_group_or_bot_for_author_books(chat_id, url):
     soup_with = await get(url)
 
-    if call.find('-1001572945629') == -1:
+    if chat_id != -1001572945629:
         soup_without = await get_without_register(url)
 
         if not author_books(soup_without) and author_books(soup_with):
             text = strings_for_user_into_bot(danger_message=True)
-            await bot.send_message(-1001572945629, text)
+            await bot.send_message(chat_id, text)
             return False
 
         elif author_books(soup_without):
             text = strings_for_user_into_bot(second_message='books')
-            await bot.send_message(415348636, text)
+            await bot.send_message(chat_id, text)
 
             book_dict_without, count_books_without, author = author_books(soup_without)
             return book_dict_without, count_books_without, 'bot', author
