@@ -35,7 +35,7 @@ async def command_help(message: types.Message):
 @rate_limit(limit=3)
 @dp.message_handler(CommandStart())
 async def command_start(message: types.Message):
-    if message.chat.id == 415348636:
+    if message.chat.id != 415348636:
         text = f'Привет, {message.from_user.full_name}! \n\nЯ помогу найти тебе любую книгу!😇\n' \
                f'Чтобы начать, пришли мне название книги 📖\n\n' \
                f'Я также могу производить поиск по ФИО автора или названию книжной серии ☺\n' \
