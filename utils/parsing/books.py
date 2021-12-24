@@ -14,6 +14,7 @@ def search_books(soup):
         link = li.find('a').get('href')
         try:
             author = li.find_all('a')[1].text
+            author = author.replace("'", '"')
         except IndexError:
             author = 'no-name'
 
