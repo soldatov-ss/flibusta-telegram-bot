@@ -27,7 +27,7 @@ async def chosen_link_author(message: types.Message):
 
     await message.answer(text, reply_markup=get_language(
         languages_lst=languages_lst, link=link, abbr_lst=abbr_lst))
-    await db.add_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
+    await db.rating_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
 
 
 @dp.message_handler(regexp=re.compile(r'(^/b_\d+)|(^/b_\d+@.+)'))

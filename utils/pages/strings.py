@@ -85,7 +85,7 @@ def strings_for_user_into_bot(danger_message=None, second_message=None, no_resul
 
     if second_message == 'series':
         text = f'Больше книжных серий доступно в группе -- @free_book_flibusta 📚'
-    elif second_message == 'authors':
+    elif second_message == 'author':
         text = f'Больше авторов доступно в группе -- @free_book_flibusta 📚'
     elif second_message == 'books':
         text = f'Больше книг доступно в группе -- @free_book_flibusta 📚'

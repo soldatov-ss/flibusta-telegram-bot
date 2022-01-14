@@ -38,5 +38,5 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
     except InvalidQueryID:  # Ловим ошибку на длительную скачивание/отправку
         pass
 
-    await db.add_book(book=book, link=link)  # добавляем в базу данных (для составления рейтинга скачанных книг)
+    await db.rating_book(book=book, link=link)  # добавляем в базу данных (для составления рейтинга скачанных книг)
     response.close()

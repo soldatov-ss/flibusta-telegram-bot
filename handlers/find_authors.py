@@ -23,8 +23,7 @@ async def author_command(message: types.Message):
     if text: return await message.answer(text)
 
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
-    authors_info = await check_group_or_bot(message.chat.id, url, func=search_authors, method='authors')
-
+    authors_info = await check_group_or_bot(message.chat.id, url, func=search_authors, method='author')
     if authors_info:
         authors_dict, count_authors, group_or_bot = authors_info
         authors_pages = create_pages(authors_dict, count_authors, 'authors')  # Общий список книг
@@ -37,7 +36,7 @@ async def author_command(message: types.Message):
         await message.answer(current_page_text,
                              reply_markup=get_small_keyboard(
                                  count_pages=len(authors_pages), key=current_author_hash, method='author'))
-        await db.add_new_pages(authors_pages, current_author_hash)
+        await db.add_new_pages('author_pages', authors_pages, current_author_hash)
 
 
 @dp.callback_query_handler(languages_call.filter())
@@ -59,7 +58,7 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
         await call.message.answer(current_page,
                                   reply_markup=get_big_keyboard(count_pages=len(author_books_pages),
                                                                 key=current_author_link, method='author_books'))
-        await db.add_new_author_pages(author_books_pages, current_author_link, count_author_books, author_name)
+        await db.add_new_author_book_pages(author_books_pages, current_author_link, count_author_books, author_name)
         await call.answer()
 
 
@@ -68,7 +67,7 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_author, authors_lst = await db.find_pages(callback_data['key'])
+        current_author, authors_lst = await db.find_pages(callback_data['key'], table_name='author_pages')
     except TypeError:
         return await call.answer(cache_time=60)
 

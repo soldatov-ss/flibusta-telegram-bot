@@ -31,7 +31,7 @@ async def find_books(message: types.Message):
         await message.answer(current_page_text,
                              reply_markup=get_small_keyboard(
                                  count_pages=len(books_pages), key=current_book_hash, method='book'))
-        await db.add_new_pages(books_pages, current_book_hash)
+        await db.add_new_pages('book_pages', books_pages, current_book_hash)
 
 
 # Пагинация

@@ -66,14 +66,31 @@ class Database:
         '''
         # Таблица для хранения страниц с результатами запросов и названиями запросов
         create_table_book_pages = '''
-        CREATE TABLE IF NOT EXISTS pages (
+        CREATE TABLE IF NOT EXISTS book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
-        book_pages text[]
+        pages text[]
         )
         '''
-        create_table_author_books_pages = '''
+        # Хранение страниц с авторами
+        create_table_author_pages = '''
         CREATE TABLE IF NOT EXISTS author_pages (
+        pages_id SERIAL PRIMARY KEY,
+        request_name VARCHAR(255) NOT NULL UNIQUE,
+        pages text[]
+        )
+        '''
+        # Страницы с книжными сериями по запросу
+        create_table_series_pages = '''
+        CREATE TABLE IF NOT EXISTS series_pages (
+        pages_id SERIAL PRIMARY KEY,
+        request_name VARCHAR(255) NOT NULL UNIQUE,
+        pages text[]
+        )
+        '''
+        # Книги по выбронному автору
+        create_table_author_books_pages = '''
+        CREATE TABLE IF NOT EXISTS author_book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
         author_name VARCHAR(255),
@@ -81,9 +98,9 @@ class Database:
         book_pages text[]
         )
         '''
-
+        # Книги по выбранной серии
         create_table_series_books_pages = '''
-        CREATE TABLE IF NOT EXISTS series_pages (
+        CREATE TABLE IF NOT EXISTS series_book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
         series_name VARCHAR(255),
@@ -96,6 +113,8 @@ class Database:
         await self.execute(create_table_books, execute=True)
         await self.execute(create_table_authors, execute=True)
         await self.execute(create_table_book_pages, execute=True)
+        await self.execute(create_table_author_pages, execute=True)
+        await self.execute(create_table_series_pages, execute=True)
         await self.execute(create_table_author_books_pages, execute=True)
         await self.execute(create_table_series_books_pages, execute=True)
 
@@ -107,7 +126,7 @@ class Database:
         except UniqueViolationError:
             pass
 
-    async def add_book(self, book: str, link: str):
+    async def rating_book(self, book: str, link: str):
         # Добавляет книгу в рейтинг, если уже есть в таблице - обновляет счетчик скачанных книг
         sql = f"INSERT INTO books(book_name, link, downloaded) VALUES ('{book}', '{link}', {1})"
         try:
@@ -117,7 +136,7 @@ class Database:
             sql = f"UPDATE books SET downloaded = {count + 1} WHERE link = '{link}'"
             await self.execute(sql, execute=True)
 
-    async def add_author(self, author: str, link: str):
+    async def rating_author(self, author: str, link: str):
         # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
         sql = f"INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', {1})"
         try:
@@ -160,44 +179,45 @@ class Database:
     #
     # Функции для массивов
     #
-    async def add_new_pages(self, items, request_name):
-        sql = f"INSERT INTO pages(request_name, book_pages) VALUES ('{request_name}', ARRAY[{items}])"
+    async def add_new_pages(self, table_name, items, request_name):
+        sql = f"INSERT INTO {table_name}(request_name, pages) VALUES ('{request_name}', ARRAY[{items}])"
 
         try:
             await self.execute(sql, execute=True)
         except UniqueViolationError:
             pass
 
-    async def add_new_author_pages(self, items, request_name, count_books=None, author=None):
-        sql = f"""INSERT INTO author_pages(request_name, author_name, сount_books, book_pages)
+
+    async def add_new_author_book_pages(self, items, request_name, count_books=None, author=None):
+        sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, book_pages)
                     VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])"""
         try:
             await self.execute(sql, execute=True)
         except UniqueViolationError:
             pass
 
-    async def add_new_series_pages(self, items, request_name, series_name, series_author, series_genres):
-        sql = f"""INSERT INTO series_pages(request_name, series_name, series_author, series_genres, book_pages)
+    async def add_new_series_book_pages(self, items, request_name, series_name, series_author, series_genres):
+        sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, book_pages)
                     VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])"""
         try:
             await self.execute(sql, execute=True)
         except UniqueViolationError:
             pass
 
-    async def find_pages(self, request_name):
-        sql = f"SELECT request_name, book_pages FROM pages WHERE request_name = '{request_name}'"
+    async def find_pages(self, request_name, table_name):
+        sql = f"SELECT request_name, pages FROM {table_name} WHERE request_name = '{request_name}'"
         res = await self.execute(sql, fetch=True)
         if not res: return
 
         name = res[0].get('request_name')
-        book_pages = res[0].get('book_pages')
+        book_pages = res[0].get('pages')
         book_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
                       book_pages[0]]  # убираем экранирование с postgresql
 
         return name, book_pages
 
     async def author_pages(self, request_name):
-        sql = f"SELECT request_name, author_name, book_pages, сount_books FROM author_pages WHERE request_name = '{request_name}'"
+        sql = f"SELECT request_name, author_name, book_pages, сount_books FROM author_book_pages WHERE request_name = '{request_name}'"
         res = await self.execute(sql, fetch=True)
         if not res: return
 
@@ -211,7 +231,7 @@ class Database:
         return name, pages_lst, author_name, count_books
 
     async def series_pages(self, request_name):
-        sql = f"SELECT request_name, series_name, series_author, series_genres, book_pages FROM series_pages WHERE request_name = '{request_name}'"
+        sql = f"SELECT request_name, series_name, series_author, series_genres, book_pages FROM series_book_pages WHERE request_name = '{request_name}'"
         res = await self.execute(sql, fetch=True)
         if not res: return
 
@@ -224,4 +244,4 @@ class Database:
         return name, series_pages, series_info
 
     async def delete_table_pages(self):
-        await self.execute(f'DROP TABLE pages, author_pages, series_pages', execute=True)
+        await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)

@@ -24,7 +24,7 @@ async def series_command(message: types.Message):
     text = check_args(series_name, 'series')  # Проверяем не пусты ли аргументы на команду /series
     if text: return await message.answer(text)
 
-    url = f'https://flibusta.is/booksearch?ask={series_name}&chs=on'
+    url = f'http://flibusta.is/booksearch?ask={series_name}&chs=on'
 
     series_info = await check_group_or_bot(message.chat.id, url, func=search_series, method='series')
     if series_info:
@@ -37,7 +37,7 @@ async def series_command(message: types.Message):
         await message.answer(current_page,
                              reply_markup=get_small_keyboard(
                                  count_pages=len(series_pages), key=current_series_name, method='series'))
-        await db.add_new_pages(series_pages, current_series_name)
+        await db.add_new_pages('series_pages', series_pages, current_series_name)
 
 
 @dp.message_handler(regexp=re.compile(r'(^/sequence_\d+)|(^/sequence_\d+@)'))
@@ -61,7 +61,7 @@ async def chosen_link_series(message: types.Message):
             current_page_text,
             reply_markup=get_big_keyboard(count_pages=len(series_pages), key=current_series_link,
                                           method='series_books'))
-        await db.add_new_series_pages(series_pages, current_series_link, series_name, series_author, series_genres)
+        await db.add_new_series_book_pages(series_pages, current_series_link, series_name, series_author, series_genres)
 
 
 # Пагинация
@@ -69,7 +69,7 @@ async def chosen_link_series(message: types.Message):
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_series_name, series_books_pages = await db.find_pages(callback_data['key'])
+        current_series_name, series_books_pages = await db.find_pages(callback_data['key'], table_name='series_pages')
     except TypeError:
         return await call.answer(cache_time=60)
 
