@@ -39,7 +39,7 @@ async def find_books(message: types.Message):
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_book, books_lst = await db.find_pages(callback_data['key'])
+        current_book, books_lst = await db.find_pages(callback_data['key'], table_name='book_pages')
     except TypeError:
         return await call.answer(cache_time=60)
 
