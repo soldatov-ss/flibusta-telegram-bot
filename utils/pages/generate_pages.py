@@ -10,10 +10,10 @@ def create_pages(books_dict: dict, count_items, flag) -> list:
     my_str, first_text, other_text = '', '', ''
 
     for key, item in books_dict.items():
-        if flag == 'books':
+        if flag == 'book':
             first_text, other_text = book_strings(count_items, book=item[0],
                                                   author=item[1], link=key)
-        elif flag == 'authors':
+        elif flag == 'author':
             first_text, other_text = author_strings(count_items, author=item, link=key)
 
         elif flag == 'author_books':

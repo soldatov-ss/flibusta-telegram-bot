@@ -1,4 +1,3 @@
-import hashlib
 import re
 
 from aiogram import types
@@ -8,10 +7,8 @@ from keyboards.inline.big_keyboard import big_pagination, get_big_keyboard
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
-from utils.misc import check_link, check_group_or_bot_for_series_books, \
-    check_group_or_bot
-from utils.pages.generate_pages import create_pages, get_page
-from utils.parsing.series import description_series, search_series
+from utils.misc import check_link, create_current_name, get_list_pages, get_series_pages
+from utils.pages.generate_pages import get_page
 from utils.throttlig import rate_limit
 
 
@@ -25,19 +22,15 @@ async def series_command(message: types.Message):
     if text: return await message.answer(text)
 
     url = f'http://flibusta.is/booksearch?ask={series_name}&chs=on'
+    current_series_hash = create_current_name(message.chat.id, series_name)
+    series_pages = await get_list_pages(current_series_hash, message.chat.id, url, method='series')
 
-    series_info = await check_group_or_bot(message.chat.id, url, func=search_series, method='series')
-    if series_info:
-        series_dict, count_series, group_or_bot = series_info
-        series_pages = create_pages(books_dict=series_dict, count_items=count_series, flag='series')
-
-        current_series_name = hashlib.md5((series_name + group_or_bot).encode()).hexdigest()
+    if series_pages:
         current_page = get_page(series_pages)
 
         await message.answer(current_page,
                              reply_markup=get_small_keyboard(
-                                 count_pages=len(series_pages), key=current_series_name, method='series'))
-        await db.add_new_pages('series_pages', series_pages, current_series_name)
+                                 count_pages=len(series_pages), key=current_series_hash, method='series'))
 
 
 @dp.message_handler(regexp=re.compile(r'(^/sequence_\d+)|(^/sequence_\d+@)'))
@@ -46,22 +39,16 @@ async def chosen_link_series(message: types.Message):
     link = check_link(message.text)
     url = f'http://flibusta.is{link}?pages='
 
-    series_books_info = await check_group_or_bot_for_series_books(message.chat.id, url, link)
-    if series_books_info:
-        series_book_dict, count_books, group_or_bot, soup = series_books_info
+    current_series_link_hash = create_current_name(message.chat.id, link, flag=True)
 
-        series_name, series_author, series_genres = description_series(soup)  # Описание серии
-        series_info = [series_name, series_author, series_genres]
-
-        current_series_link = group_or_bot + link
-        series_pages = create_pages(series_book_dict, count_items=count_books, flag='series_books')
+    book_pages = await get_series_pages(current_series_link_hash, message.chat.id, url, link)
+    if book_pages:
+        series_pages, series_info = book_pages
         current_page_text = get_page(items_list=series_pages, series_lst=series_info)
 
-        await message.answer(
-            current_page_text,
-            reply_markup=get_big_keyboard(count_pages=len(series_pages), key=current_series_link,
-                                          method='series_books'))
-        await db.add_new_series_book_pages(series_pages, current_series_link, series_name, series_author, series_genres)
+        await message.answer(current_page_text,
+                             reply_markup=get_big_keyboard(count_pages=len(series_pages), key=current_series_link_hash,
+                                                           method='series_books'))
 
 
 # Пагинация
@@ -100,3 +87,4 @@ async def characters_page_callback(call: types.CallbackQuery, callback_data: dic
                                  reply_markup=get_big_keyboard(count_pages=len(series_pages),
                                                                key=current_series_name, page=current_page,
                                                                method='series_books'))
+    await call.answer()
