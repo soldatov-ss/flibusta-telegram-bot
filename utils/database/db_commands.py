@@ -187,7 +187,6 @@ class Database:
         except UniqueViolationError:
             pass
 
-
     async def add_new_author_book_pages(self, items, request_name, count_books=None, author=None):
         sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, book_pages)
                     VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])"""
@@ -238,10 +237,21 @@ class Database:
         name = res[0].get('request_name')
         series_pages = res[0].get('book_pages')
         series_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                   series_pages[0]]  # убираем экранирование с postgresql
+                        series_pages[0]]  # убираем экранирование с postgresql
         series_info = [res[0].get('series_name'), res[0].get('series_author'), res[0].get('series_genres')]
 
         return name, series_pages, series_info
 
     async def delete_table_pages(self):
         await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)
+
+    async def update_book_pages(self, request_name, pages, table_name, column='pages'):
+        sql = f"UPDATE {table_name} SET {column} = ARRAY[{pages}] WHERE request_name='{request_name}'"
+        await self.execute(sql, execute=True)
+
+    async def update_author_pages(self, pages: list, request_name: str, count_books: int):
+        sql = f"""
+                UPDATE author_book_pages SET book_pages = ARRAY[{pages}],
+                сount_books = {count_books} WHERE request_name = '{request_name}'
+                """
+        await self.execute(sql, execute=True)

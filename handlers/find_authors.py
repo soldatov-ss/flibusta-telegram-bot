@@ -8,9 +8,11 @@ from keyboards.inline.formats import languages_call
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.check_args import check_args
-from utils.misc import create_current_name, get_list_pages, \
-    get_author_pages
+from utils.misc import create_current_name
+from utils.pages.generate_list_pages import get_list_pages, get_author_pages, get_from_request_pages, \
+    get_from_request_author_pages
 from utils.pages.generate_pages import get_page
+from utils.parsing.authors import search_authors
 from utils.throttlig import rate_limit
 
 
@@ -23,14 +25,18 @@ async def author_command(message: types.Message):
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
 
     current_author_hash = create_current_name(message.chat.id, message.text.title())
-    authors_pages = await get_list_pages(current_author_hash, message.chat.id, url, method='author')
+    authors_pages, flag = await get_list_pages(current_author_hash, message.chat.id, url, method='author',
+                                               func=search_authors)
 
     if authors_pages:
         current_page_text = get_page(items_list=authors_pages)
 
-        await message.answer(current_page_text,
-                             reply_markup=get_small_keyboard(
-                                 count_pages=len(authors_pages), key=current_author_hash, method='author'))
+        await message.answer(current_page_text, reply_markup=get_small_keyboard(
+            count_pages=len(authors_pages), key=current_author_hash, method='author'))
+
+        if flag: # Обновляем в БД данные по доступным авторам
+            updated_list_pages = await get_from_request_pages(message.chat.id, func=search_authors, method='author', url=url)
+            await db.update_book_pages(current_author_hash, updated_list_pages, table_name='author_pages')
 
 
 @dp.callback_query_handler(languages_call.filter())
@@ -46,13 +52,18 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
     book_pages = await get_author_pages(current_author_link, chat_id, url)
 
     if book_pages:
-        book_pages, author_name, count_books = book_pages
+        book_pages, author_name, count_books, flag = book_pages
 
         current_page = get_page(book_pages, author=[author_name, count_books])
         await call.message.answer(current_page,
                                   reply_markup=get_big_keyboard(count_pages=len(book_pages),
                                                                 key=current_author_link, method='author_books'))
         await call.answer()
+
+        if flag: # Обновляем в БД данные по доступным книгам
+            updated_list_pages, count_books, _ = await get_from_request_author_pages(chat_id, url=url)
+            await db.update_author_pages(updated_list_pages, current_author_link, count_books)
+
 
 
 # Пагинация при показе всех доступных авторов
