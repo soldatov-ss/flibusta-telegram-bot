@@ -90,7 +90,7 @@ async def check_group_or_bot_for_series_books(chat_id, url, link):
     soup_with = await get(url)
 
     if chat_id == 415348636:
-        text = strings_for_user_into_bot(second_message='books')
+        text = strings_for_user_into_bot(second_message='book')
         await bot.send_message(chat_id, text)
         series_book_dict, count_series_books = await series_books(soup_with, link)
         return series_book_dict, count_series_books, 'bot', soup_with
