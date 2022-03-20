@@ -77,7 +77,7 @@ async def get_series_pages(current_name_hash, chat_id: int, url: str, link: str)
         _, list_pages, series_info = pages
         flag = True
     else:
-        pages = get_from_request_series_pages(chat_id, url, link)
+        pages = await get_from_request_series_pages(chat_id, url, link)
         if not pages: return
 
         list_pages, series_info = pages
