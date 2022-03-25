@@ -11,6 +11,8 @@ from utils.parsing.books import search_books
 
 @dp.message_handler()
 async def find_books(message: types.Message):
+    if message.reply_to_message:
+        return
     text = check_args(message.text, 'book')  # Проверяем на длину запроса, чтобы не был слишком краток
     if text: return await message.answer(text)
     url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
