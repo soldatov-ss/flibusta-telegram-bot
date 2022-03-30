@@ -35,17 +35,21 @@ class ThrottlingMiddleware(BaseMiddleware):
         msg = target.message if isinstance(target, types.CallbackQuery) else target
         delta = throttled.rate - throttled.delta
 
-        if throttled.exceeded_count == 2:
+        if throttled.exceeded_count == 2 and not msg.reply_markup:
             await msg.reply('Слишком Часто! Давай не так быстро')
             return
+        elif throttled.exceeded_count == 2 and msg.reply_markup:
+            await msg.reply('⚠ Слишком Часто! Давай не так быстро ⚠\n'
+                            '<b>Я уже начал скачивать для тебя книгу</b> 👐\n')
+            return
         elif throttled.exceeded_count == 3:
-            await msg.reply(f'Всё. Больше не отвечу, пока не пройдет {round(delta, 3)} секунд')
+            await msg.reply(f'⚠ Всё. Больше не отвечу, пока не пройдет {round(delta, 3)} секунд')
             return
         await asyncio.sleep(delta)
 
         thr = await dispatcher.check_key(key)
         if thr.exceeded_count == throttled.exceeded_count:
-            await msg.reply("Все, теперь отвечаю.")
+            await msg.reply("⚠ Все, теперь отвечаю.")
 
     async def on_process_message(self, message, data):
         await self.throttle(message)

@@ -8,8 +8,10 @@ from keyboards.inline.formats import files_call
 from loader import dp, db
 from utils.parsing.books import description
 from utils.parsing.general import get, get_tempfile
+from utils.throttlig import rate_limit
 
 
+@rate_limit(limit=5)
 @dp.callback_query_handler(files_call.filter())
 async def download_book(call: types.CallbackQuery, callback_data: dict):
     format_file = callback_data['format_file']

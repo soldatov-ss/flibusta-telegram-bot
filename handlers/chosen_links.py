@@ -8,6 +8,7 @@ from utils.misc import check_link
 from utils.parsing.authors import languages
 from utils.parsing.books import parsing_formats, description
 from utils.parsing.general import get, get_without_register
+from utils.throttlig import rate_limit
 
 
 @dp.message_handler(regexp=re.compile(r'(^/a_\d+)|(^/a_\d+@)'))
@@ -29,7 +30,7 @@ async def chosen_link_author(message: types.Message):
         languages_lst=languages_lst, link=link, abbr_lst=abbr_lst))
     await db.rating_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
 
-
+@rate_limit(limit=2)
 @dp.message_handler(regexp=re.compile(r'(^/b_\d+)|(^/b_\d+@.+)'))
 async def chosen_link_book(message: types.Message):
     # Ловим линк и выводим доступные форматы для скачивания
