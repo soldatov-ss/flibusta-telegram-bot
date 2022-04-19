@@ -37,7 +37,7 @@ async def main_handler(message: types.Message, state: FSMContext):
     elif choice_buttons[0] == 'Писатели':
         await author_command(message)
 
-@rate_limit(limit=5)
+
 @dp.callback_query_handler(result_request.filter())
 async def current_result(call: types.CallbackQuery, callback_data: dict):
     cur_state = dp.current_state()
