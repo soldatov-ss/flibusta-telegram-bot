@@ -6,25 +6,23 @@ from aiogram.dispatcher.filters import Command
 from keyboards.inline.big_keyboard import big_pagination, get_big_keyboard
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.check_args import check_args
 from utils.misc import check_link, create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_series_pages, get_from_request_pages, \
     get_from_request_series_pages
 from utils.pages.generate_pages import get_page
 from utils.parsing.series import search_series
 from utils.throttlig import rate_limit
+from utils.utils import get_message_text
 
 
 @rate_limit(limit=4)
 @dp.message_handler(Command('series'))
 async def series_command(message: types.Message):
     # Все доступные книжные серии
-    series_name = message.get_args()
 
-    text = check_args(series_name, 'series')  # Проверяем не пусты ли аргументы на команду /series
-    if text: return await message.answer(text)
-
+    series_name = await get_message_text(message, method='series')
     url = f'http://flibusta.is/booksearch?ask={series_name}&chs=on'
+
     current_series_hash = create_current_name(message.chat.id, series_name.title())
     series_pages, flag = await get_list_pages(current_series_hash, message.chat.id, url, method='series',
                                               func=search_series)

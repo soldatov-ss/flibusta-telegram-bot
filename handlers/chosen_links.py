@@ -11,6 +11,7 @@ from utils.parsing.general import get, get_without_register
 from utils.throttlig import rate_limit
 
 
+@rate_limit(limit=3)
 @dp.message_handler(regexp=re.compile(r'(^/a_\d+)|(^/a_\d+@)'))
 async def chosen_link_author(message: types.Message):
     # Ловим линк и выводим доступные варинаты языков на которых написаны книги
@@ -29,6 +30,7 @@ async def chosen_link_author(message: types.Message):
     await message.answer(text, reply_markup=get_language(
         languages_lst=languages_lst, link=link, abbr_lst=abbr_lst))
     await db.rating_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
+
 
 @rate_limit(limit=2)
 @dp.message_handler(regexp=re.compile(r'(^/b_\d+)|(^/b_\d+@.+)'))

@@ -66,7 +66,7 @@ async def check_group_or_bot(chat_id: int, url: str, func, method: str):
 
 async def check_group_or_bot_for_author_books(chat_id, url):
     soup_with = await get(url)
-    if chat_id != 415348636:
+    if chat_id == 415348636:
         soup_without = await get_without_register(url)
 
         if not author_books(soup_without) and author_books(soup_with):

@@ -1,23 +1,21 @@
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.check_args import check_args
 from utils.misc import create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_from_request_pages
 from utils.pages.generate_pages import get_page
 from utils.parsing.books import search_books
+from utils.utils import get_message_text
 
 
-@dp.message_handler()
+@dp.message_handler(state=FSMContext)
 async def find_books(message: types.Message):
-    if message.reply_to_message:
-        return
-    text = check_args(message.text, 'book')  # Проверяем на длину запроса, чтобы не был слишком краток
-    if text: return await message.answer(text)
+    book_name = await get_message_text(message, method='book')
     url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
 
-    current_book_hash = create_current_name(message.chat.id, message.text.title())
+    current_book_hash = create_current_name(message.chat.id, book_name)
     books_pages, flag = await get_list_pages(current_book_hash, message.chat.id, url, method='book', func=search_books)
 
     if books_pages:

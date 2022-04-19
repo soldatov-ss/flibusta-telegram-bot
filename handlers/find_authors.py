@@ -2,29 +2,29 @@ import json
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.storage import FSMContextProxy
 
 from keyboards.inline.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.inline.formats import languages_call
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.check_args import check_args
 from utils.misc import create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_author_pages, get_from_request_pages, \
     get_from_request_author_pages
 from utils.pages.generate_pages import get_page
 from utils.parsing.authors import search_authors
 from utils.throttlig import rate_limit
+from utils.utils import get_message_text
 
 
 @rate_limit(limit=3)
 @dp.message_handler(Command('author'))
-async def author_command(message: types.Message):
-    author = message.get_args()
-    text = check_args(author, 'author')  # Проверяем не пусты ли аргументы на команду /author
-    if text: return await message.answer(text)
+async def author_command(message: types.Message | FSMContextProxy):
+    author = await get_message_text(message, method='author')
+
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
 
-    current_author_hash = create_current_name(message.chat.id, message.text.title())
+    current_author_hash = create_current_name(message.chat.id, author.title())
     authors_pages, flag = await get_list_pages(current_author_hash, message.chat.id, url, method='author',
                                                func=search_authors)
 

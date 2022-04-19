@@ -26,7 +26,12 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
     wait = await call.message.answer(f'Ожидайте, начинаю скачивать книгу 🙃 {url}')
 
     response = await get_tempfile(url)
-    res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
+    try:
+        res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
+    except AttributeError:
+        return await call.message.answer('Упс! Возникли небольшие неполадки на сервере 😲\n'
+                                         'Попробуй скачать книгу в другом формате\n'
+                                         'Либо попробуй через время еще раз 🙌')
     file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{book}.{format_file}')
 
     try:

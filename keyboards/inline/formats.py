@@ -33,3 +33,18 @@ def get_language(languages_lst: list, link: str, abbr_lst):
             )
         )
     return markup
+
+
+result_request = CallbackData('result_request', 'message', 'choice')
+
+def get_requests(req_lst: list, message):
+    markup = InlineKeyboardMarkup(row_width=2)
+
+    for elem in req_lst:
+        markup.insert(
+            InlineKeyboardButton(
+                text=elem,
+                callback_data=result_request.new(message=message, choice=elem)
+            )
+        )
+    return markup

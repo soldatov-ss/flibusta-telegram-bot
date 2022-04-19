@@ -57,7 +57,7 @@ async def command_start(message: types.Message):
     await message.answer(text)
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
 
-
+@rate_limit(limit=3)
 @dp.message_handler(Command('create_group'))
 async def create_user_group(message: types.Message):
     text = '''
@@ -97,7 +97,7 @@ async def rating_top_book(message: types.Message):
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
 
-
+@rate_limit(limit=3)
 @dp.message_handler(regexp=re.compile(r'^/.+'))
 async def other_command(message: types.Message):
     # Проверям на битую любую битую ссылку
