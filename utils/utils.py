@@ -43,6 +43,7 @@ async def create_list_choices(message: types.Message):
             result.append(i.text.split()[1].title())
     if not result:
         empty_message = strings_for_user_into_bot(no_result_message='book')
-        return await message.answer(empty_message)
+        await message.answer(empty_message)
+        return
 
     return result

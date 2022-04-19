@@ -20,12 +20,13 @@ async def main_handler(message: types.Message, state: FSMContext):
         return
 
     choice_buttons = await create_list_choices(message)
-
-    if len(choice_buttons) > 1:
+    if not choice_buttons:
+        return
+    elif len(choice_buttons) > 1:
         text = '💡Найдены следующие результаты💡\n' \
                'Чтобы продолжить сделай свой выбор 👇'
         await message.answer(text,
-                             reply_markup=get_requests(req_lst=choice_buttons, message=message.text))
+                             reply_markup=get_requests(req_lst=choice_buttons))
 
         async with state.proxy() as data:
             data["info"] = message
