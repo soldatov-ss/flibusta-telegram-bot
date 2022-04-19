@@ -109,98 +109,88 @@ class Database:
         book_pages text[]
         )
         '''
-        await self.execute(create_table_user, execute=True)
-        await self.execute(create_table_books, execute=True)
-        await self.execute(create_table_authors, execute=True)
-        await self.execute(create_table_book_pages, execute=True)
-        await self.execute(create_table_author_pages, execute=True)
-        await self.execute(create_table_series_pages, execute=True)
-        await self.execute(create_table_author_books_pages, execute=True)
-        await self.execute(create_table_series_books_pages, execute=True)
+        list_tables = [create_table_user, create_table_books, create_table_authors,
+                       create_table_book_pages, create_table_author_pages, create_table_series_pages,
+                       create_table_author_books_pages, create_table_series_books_pages]
+
+        for table in list_tables:
+            await self.execute(table, execute=True)
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
-        sql = f"INSERT INTO users(full_name, telegram_id) VALUES ('{user}', {telegram_id})"
+        sql = f"INSERT INTO users(full_name, telegram_id) VALUES ('{user}', {telegram_id}) ON CONFLICT  DO NOTHING"
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
+        except:
             pass
 
     async def rating_book(self, book: str, link: str):
         # Добавляет книгу в рейтинг, если уже есть в таблице - обновляет счетчик скачанных книг
-        sql = f"INSERT INTO books(book_name, link, downloaded) VALUES ('{book}', '{link}', {1})"
+        sql = f'''INSERT INTO books(book_name, link, downloaded)  VALUES('{book}', '{link}', 1)
+                    ON CONFLICT (link) DO UPDATE 
+                    SET downloaded = 1 + (SELECT downloaded from books where link = '{link}')'''
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
-            count = await self.execute(f"SElECT downloaded FROM books WHERE link = '{link}'", fetchval=True)
-            sql = f"UPDATE books SET downloaded = {count + 1} WHERE link = '{link}'"
-            await self.execute(sql, execute=True)
+        except:
+            pass
 
     async def rating_author(self, author: str, link: str):
         # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
-        sql = f"INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', {1})"
+        sql = f'''INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', 1)
+                    ON CONFLICT (link) DO UPDATE 
+                    SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
-            count = await self.execute(f"SElECT queries FROM authors WHERE link = '{link}'", fetchval=True)
-            sql = f"UPDATE authors SET queries = {count + 1} WHERE link = '{link}'"
-            await self.execute(sql, execute=True)
+        except:
+            pass
 
-    async def select_all_users(self):
-        count = await self.execute('SELECT count(*) FROM users', fetchval=True)
+    async def select_count_values(self, table_name):
+        count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
         return count
 
-    async def select_all_books(self):
-        count = await self.execute('SELECT count(*) FROM books', fetchval=True)
-        return count
 
-    async def select_top_books(self):
-        # Возвращаем топ 10 книг по скачиванию
-        top = await self.execute('SELECT * FROM books ORDER BY downloaded DESC LIMIT 10', fetch=True)
+    async def rating_top_10_values(self, table):
+        # Возвращаем топ 10 книг или авторов по запросам и скачиваниям
+        query = 'downloaded' if table == 'book' else 'queries'
+        top = await self.execute(f'SELECT * FROM {table}s ORDER BY {query} DESC LIMIT 10', fetch=True)
         top_dict = {}
         for elem in top:
             link = elem.get('link')
             link = link[1:].replace('/', '_', 1)
-            top_dict[link] = elem.get('book_name')
+            top_dict[link] = elem.get(f'{table}_name')
 
         return top_dict
 
-    async def select_top_authors(self):
-        # Возвращаем топ 10 авторов по запросам
-        top = await self.execute('SELECT * FROM authors ORDER BY queries DESC LIMIT 10', fetch=True)
-        top_dict = {}
-        for elem in top:
-            link = elem.get('link')
-            link = link[1:].replace('/', '_', 1)
-            top_dict[link] = elem.get('author_name')
-
-        return top_dict
 
     #
     # Функции для массивов
     #
     async def add_new_pages(self, table_name, items, request_name):
-        sql = f"INSERT INTO {table_name}(request_name, pages) VALUES ('{request_name}', ARRAY[{items}])"
+        sql = f"""
+        INSERT INTO {table_name}(request_name, pages) VALUES ('{request_name}', ARRAY[{items}]) ON CONFLICT  DO NOTHING
+        """
 
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
+        except:
             pass
 
     async def add_new_author_book_pages(self, items, request_name, count_books=None, author=None):
         sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, book_pages)
-                    VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])"""
+                    VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])
+                    ON CONFLICT DO NOTHING"""
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
+        except:
             pass
 
     async def add_new_series_book_pages(self, items, request_name, series_name, series_author, series_genres):
         sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, book_pages)
-                    VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])"""
+                    VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])
+                    ON CONFLICT  DO NOTHING"""
         try:
             await self.execute(sql, execute=True)
-        except UniqueViolationError:
+        except:
             pass
 
     async def find_pages(self, request_name, table_name):

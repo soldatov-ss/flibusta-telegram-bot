@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContextProxy
 
-from utils.check_args import check_args
+from .check_args import check_args
 from utils.pages.strings import strings_for_user_into_bot
 from utils.parsing.general import get_without_register, get
 

@@ -9,10 +9,10 @@ async def rating(message: types.Message):
     args = message.get_args()
     if args:
         if args == 'book':
-            count = await db.select_all_books()
+            count = await db.select_count_values('books')
             return await message.answer(text=f'Всего было скачано книг: {count}')
         elif args == 'user':
-            count = await db.select_all_users()
+            count = await db.select_count_values('users')
             return await message.answer(text=f'Всего в базе пользователей: {count}')
 
 

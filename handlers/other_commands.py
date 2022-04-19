@@ -82,7 +82,7 @@ async def create_user_group(message: types.Message):
 @dp.message_handler(Command('rating_b'))
 async def rating_top_book(message: types.Message):
     # Выводит топ 10 книг по скачиваниям
-    rating_dict = await db.select_top_books()
+    rating_dict = await db.rating_top_10_values('book')
     descr = f'ТОП 10 КНИГ'
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
@@ -92,7 +92,7 @@ async def rating_top_book(message: types.Message):
 @dp.message_handler(Command('rating_a'))
 async def rating_top_book(message: types.Message):
     # Выводит топ 10 авторов по запросам
-    rating_dict = await db.select_top_authors()
+    rating_dict = await db.rating_top_10_values('author')
     descr = f'ТОП 10 АВТОРОВ'
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
