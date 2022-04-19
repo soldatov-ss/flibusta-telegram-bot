@@ -35,11 +35,12 @@ async def create_list_choices(message: types.Message):
 
     result = []
     for i in soup.find_all('h3'):
+        if not i.text.split()[1] in ('серии', 'писатели', 'книги'):
+            continue
         if i.text.split()[1] == 'серии':
             result.append('Книжные серии')
         else:
             result.append(i.text.split()[1].title())
-
     if not result:
         empty_message = strings_for_user_into_bot(no_result_message='book')
         return await message.answer(empty_message)

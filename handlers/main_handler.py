@@ -10,7 +10,7 @@ from utils.throttlig import rate_limit
 from utils.utils import create_list_choices
 
 
-@rate_limit(limit=5)
+@rate_limit(limit=3)
 @dp.message_handler()
 async def main_handler(message: types.Message, state: FSMContext):
     '''
