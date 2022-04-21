@@ -14,8 +14,8 @@ async def get_message_text(message: types.Message | FSMContextProxy, method: str
         current_res = message.get_args()
         empty_message = check_args(current_res, method)
         if empty_message:
-            return await message.answer(empty_message)
-
+            await message.answer(empty_message)
+            return
     else:
         current_res = message.text
 
