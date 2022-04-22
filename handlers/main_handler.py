@@ -44,6 +44,8 @@ async def current_result(call: types.CallbackQuery, callback_data: dict):
     cur_state = dp.current_state()
 
     async with cur_state.proxy() as data:
+        if not data.keys(): return
+
         if callback_data['choice'] == 'Писатели':
             await author_command(data['info'])
         elif callback_data['choice'] == 'Книжные серии':

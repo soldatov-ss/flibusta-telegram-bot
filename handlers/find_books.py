@@ -2,7 +2,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
-from loader import dp, db, bot
+from loader import dp, db
 from utils.misc import create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_from_request_pages
 from utils.pages.generate_pages import get_page
@@ -12,33 +12,32 @@ from utils.utils import get_message_text
 
 @dp.message_handler(state=FSMContext)
 async def find_books(message: types.Message):
-    try:
-        book_name = await get_message_text(message, method='book')
-        if not book_name: return
 
-        url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
+    book_name = await get_message_text(message, method='book')
+    if not book_name: return
 
-        current_book_hash = create_current_name(message.chat.type, book_name)
-        books_pages, flag = await get_list_pages(current_book_hash, message.chat, url, method='book', func=search_books)
+    url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
 
-        if books_pages:
-            current_page_text = get_page(items_list=books_pages)
+    current_book_hash = create_current_name(message.chat.type, book_name)
+    books_pages, flag = await get_list_pages(current_book_hash, message.chat, url, method='book', func=search_books)
 
-            await message.answer(current_page_text, reply_markup=get_small_keyboard(
-                count_pages=len(books_pages), key=current_book_hash, method='book'))
+    if books_pages:
+        current_page_text = get_page(items_list=books_pages)
 
-            if flag: # Обновляем в БД данные по доступным книгам
-                updated_list_pages = await get_from_request_pages(message.chat, func=search_books, method='book', url=url)
-                await db.update_book_pages(current_book_hash, updated_list_pages, table_name='book_pages')
-    except Exception as ex:
-        await bot.send_message(415348636, str(ex))
+        await message.answer(current_page_text, reply_markup=get_small_keyboard(
+            count_pages=len(books_pages), key=current_book_hash, method='book'))
+
+        if flag: # Обновляем в БД данные по доступным книгам
+            updated_list_pages = await get_from_request_pages(message.chat, func=search_books, method='book', url=url)
+            await db.update_book_pages(current_book_hash, updated_list_pages, table_name='book_pages')
+
 
 # Пагинация
 @dp.callback_query_handler(pagination_call.filter(method='book'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_book, books_lst = await db.find_pages(callback_data['key'], table_name='book_pages')
+        current_book, books_lst = await db.select_pages(callback_data['key'], table_name='book_pages')
     except TypeError:
         return await call.answer(cache_time=60)
 

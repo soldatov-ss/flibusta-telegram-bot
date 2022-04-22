@@ -1,7 +1,7 @@
 from typing import Union
 
 import asyncpg
-from asyncpg import Connection, UniqueViolationError
+from asyncpg import Connection
 from asyncpg.pool import Pool
 
 import config
@@ -95,7 +95,7 @@ class Database:
         request_name VARCHAR(255) NOT NULL UNIQUE,
         author_name VARCHAR(255),
         сount_books INT, 
-        book_pages text[]
+        pages text[]
         )
         '''
         # Книги по выбранной серии
@@ -106,7 +106,7 @@ class Database:
         series_name VARCHAR(255),
         series_author VARCHAR(255), 
         series_genres VARCHAR(255),
-        book_pages text[]
+        pages text[]
         )
         '''
         list_tables = [create_table_user, create_table_books, create_table_authors,
@@ -119,32 +119,27 @@ class Database:
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
         sql = f"INSERT INTO users(full_name, telegram_id) VALUES ('{user}', {telegram_id}) ON CONFLICT  DO NOTHING"
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
+
 
     async def rating_book(self, book: str, link: str):
         # Добавляет книгу в рейтинг, если уже есть в таблице - обновляет счетчик скачанных книг
         sql = f'''INSERT INTO books(book_name, link, downloaded)  VALUES('{book}', '{link}', 1)
                     ON CONFLICT (link) DO UPDATE 
                     SET downloaded = 1 + (SELECT downloaded from books where link = '{link}')'''
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
+
 
     async def rating_author(self, author: str, link: str):
         # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
         sql = f'''INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', 1)
                     ON CONFLICT (link) DO UPDATE 
                     SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
+
 
     async def select_count_values(self, table_name):
+        # Выводит кол-во скачанных книг, либо кол-во юзеров
         count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
         return count
 
@@ -161,87 +156,73 @@ class Database:
 
         return top_dict
 
+    async def delete_table_pages(self):
+        await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)
 
     #
     # Функции для массивов
     #
     async def add_new_pages(self, table_name, items, request_name):
         sql = f"""
-        INSERT INTO {table_name}(request_name, pages) VALUES ('{request_name}', ARRAY[{items}]) ON CONFLICT  DO NOTHING
+        INSERT INTO {table_name}(request_name, pages) 
+        VALUES ('{request_name}', ARRAY[{items}]) ON CONFLICT  DO NOTHING
         """
 
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
 
-    async def add_new_author_book_pages(self, items, request_name, count_books=None, author=None):
-        sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, book_pages)
+
+    async def add_new_author_book_pages(self, items, request_name, count_books, author):
+        sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, pages)
                     VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])
                     ON CONFLICT DO NOTHING"""
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
+
 
     async def add_new_series_book_pages(self, items, request_name, series_name, series_author, series_genres):
-        sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, book_pages)
+        sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, pages)
                     VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])
                     ON CONFLICT  DO NOTHING"""
-        try:
-            await self.execute(sql, execute=True)
-        except:
-            pass
+        await self.execute(sql, execute=True)
 
-    async def find_pages(self, request_name, table_name):
-        sql = f"SELECT request_name, pages FROM {table_name} WHERE request_name = '{request_name}'"
+
+    async def select_pages(self, request_name, table_name, *args):
+        if args:
+            sql = f"SELECT request_name, {', '.join(args)} FROM {table_name} WHERE request_name = '{request_name}'"
+        else:
+            sql = f"SELECT request_name, pages FROM {table_name} WHERE request_name = '{request_name}'"
+
         res = await self.execute(sql, fetch=True)
         if not res: return
 
-        name = res[0].get('request_name')
-        book_pages = res[0].get('pages')
-        book_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                      book_pages[0]]  # убираем экранирование с postgresql
+        return self.get_args(res[0], table_name)
 
-        return name, book_pages
 
-    async def author_pages(self, request_name):
-        sql = f"SELECT request_name, author_name, book_pages, сount_books FROM author_book_pages WHERE request_name = '{request_name}'"
-        res = await self.execute(sql, fetch=True)
-        if not res: return
+    async def update_author_pages(self, pages: list, request_name: str, count_books: int):
+        sql = f"""
+                UPDATE author_book_pages SET pages = ARRAY[{pages}],
+                сount_books = {count_books} WHERE request_name = '{request_name}'
+                """
+        await self.execute(sql, execute=True)
 
-        name = res[0].get('request_name')
-        pages_lst = res[0].get('book_pages')
-        pages_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                     pages_lst[0]]  # убираем экранирование с postgresql
-        author_name = res[0].get('author_name')
-        count_books = res[0].get('сount_books')
-
-        return name, pages_lst, author_name, count_books
-
-    async def series_pages(self, request_name):
-        sql = f"SELECT request_name, series_name, series_author, series_genres, book_pages FROM series_book_pages WHERE request_name = '{request_name}'"
-        res = await self.execute(sql, fetch=True)
-        if not res: return
-
-        name = res[0].get('request_name')
-        series_pages = res[0].get('book_pages')
-        series_pages = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in
-                        series_pages[0]]  # убираем экранирование с postgresql
-        series_info = [res[0].get('series_name'), res[0].get('series_author'), res[0].get('series_genres')]
-
-        return name, series_pages, series_info
-
-    async def delete_table_pages(self):
-        await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)
 
     async def update_book_pages(self, request_name, pages, table_name, column='pages'):
         sql = f"UPDATE {table_name} SET {column} = ARRAY[{pages}] WHERE request_name='{request_name}'"
         await self.execute(sql, execute=True)
 
-    async def update_author_pages(self, pages: list, request_name: str, count_books: int):
-        sql = f"""
-                UPDATE author_book_pages SET book_pages = ARRAY[{pages}],
-                сount_books = {count_books} WHERE request_name = '{request_name}'
-                """
-        await self.execute(sql, execute=True)
+
+
+    @staticmethod
+    def get_args(result, table_name):
+        name = result.get('request_name')
+        pages_lst = [list(map(lambda x: x.replace('\\n', '\n'), elem)) for elem in result.get('pages')[0]]
+
+        if table_name == 'author_book_pages':
+            author_name = result.get('author_name')
+            count_books = result.get('сount_books')
+            return name, pages_lst, author_name, count_books
+        elif table_name == 'series_book_pages':
+
+            series_info = [result.get('series_name'), result.get('series_author'), result.get('series_genres')]
+            return name, pages_lst, series_info
+        else:
+            return name, pages_lst

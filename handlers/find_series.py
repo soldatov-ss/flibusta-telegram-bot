@@ -57,7 +57,7 @@ async def chosen_link_series(message: types.Message):
         if flag:  # Обновляем в БД данные по доступным книгам
             updated_list_pages, series_info = await get_from_request_series_pages(message.chat, url, link)
             await db.update_book_pages(current_series_link_hash, updated_list_pages,
-                                       table_name='series_book_pages', column='book_pages')
+                                       table_name='series_book_pages', column='pages')
 
 
 # Пагинация
@@ -65,7 +65,7 @@ async def chosen_link_series(message: types.Message):
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_series_name, series_books_pages = await db.find_pages(callback_data['key'], table_name='series_pages')
+        current_series_name, series_books_pages = await db.select_pages(callback_data['key'], table_name='series_pages')
     except TypeError:
         return await call.answer(cache_time=60)
 
@@ -84,7 +84,8 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 async def characters_page_callback(call: types.CallbackQuery, callback_data: dict):
     try:
         # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_series_name, series_pages, series_info = await db.series_pages(callback_data['key'])
+        current_series_name, series_pages, series_info = await db.select_pages(
+            callback_data['key'], 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
     except TypeError:
         return await call.answer(cache_time=60)
 

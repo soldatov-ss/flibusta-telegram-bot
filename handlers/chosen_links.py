@@ -18,7 +18,7 @@ async def chosen_link_author(message: types.Message):
     link = check_link(message.text)
     url = f'http://flibusta.is{link}&lang='
 
-    if message.chat.id == 415348636:  # чат айди бота
+    if message.chat.type == 'private':
         soup = await get_without_register(url)
     else:
         soup = await get(url)

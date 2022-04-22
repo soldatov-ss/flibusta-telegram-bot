@@ -39,7 +39,7 @@ async def get_list_pages(current_name, chat: types.Chat, url: str, method: str, 
     # Получаем список с результатом, если есть в БД - выводим
     # Если нету в БД - парсим и добавляем в БД
     flag = False
-    pages = await db.find_pages(current_name, f'{method}_pages')
+    pages = await db.select_pages(current_name, f'{method}_pages')
 
     if pages:
         list_pages = pages[1]
@@ -55,7 +55,8 @@ async def get_author_pages(current_book_hash, chat: types.Chat, url: str):
     # Получаем список с результатом, если есть в БД - выводим
     # Если нету в БД - парсим и добавляем в БД
     flag = False
-    pages = await db.author_pages(current_book_hash)
+
+    pages = await db.select_pages(current_book_hash, 'author_book_pages', 'author_name', 'pages', 'сount_books')
     if pages:
         _, list_pages, author_name, count_books = pages
         flag = True
@@ -74,7 +75,8 @@ async def get_series_pages(current_name_hash, chat: types.Chat, url: str, link: 
     # Если нету в БД - парсим и добавляем в БД
 
     flag = False
-    pages = await db.series_pages(current_name_hash)
+
+    pages = await db.select_pages(current_name_hash, 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
     if pages:
         _, list_pages, series_info = pages
         flag = True
