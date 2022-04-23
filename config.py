@@ -17,3 +17,4 @@ DB_HOST = env.str('DB_HOST')
 DB_NAME = env.str('DB_NAME')
 
 CHAT_ID = env.str('ADMINS')
+GROUP_ID = env.str('GROUP_ID')

@@ -3,6 +3,7 @@ import re
 from aiogram import types
 from aiogram.dispatcher.filters import Command, CommandStart
 
+from config import CHAT_ID
 from loader import dp, db
 from utils.pages.rating import page_rating
 from utils.throttlig import rate_limit
@@ -19,8 +20,13 @@ async def command_help(message: types.Message):
            f'/series <i>название серии</i> - поиск только по названию серии\n' \
            f'/rating_b - показывает ТОП 10 книг по скачиваниям\n' \
            f'/rating_a - показывает ТОП 10 авторов по запросам\n' \
-           f'/help - вызов справки, если ты забыл как пользоваться ботом🙃\n\n' \
-           f'Например:\n' \
+           f'/help - вызов справки, если ты забыл как пользоваться ботом🙃\n' \
+           f'/report - пожаловаться на спам/рекламу/пользователя\n\n' \
+           f'Варианты отправить жалобу на пользователя:\n' \
+           f'- Дважды кликнуть на сообщении(спам, реклама, оскробления) от пользователя ' \
+           f'чтобы оно выделилось, и прописать коммадну /report\n' \
+           f'- Просто нажав на комманду /report\n\n' \
+           f'Примеры точных запросов:\n' \
            f'/author Джоан Роулинг\n' \
            f'/author Пушкин\n' \
            f'/series песнь льда и пламени\n' \
@@ -53,9 +59,9 @@ async def command_start(message: types.Message):
                f'@free_book_flibusta - моя группа, где нет никаких ограничений\n' \
                f'Либо вы можете создать личную группу следуя инструкции: /create_group'
 
-
     await message.answer(text)
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
+
 
 @rate_limit(limit=3)
 @dp.message_handler(Command('create_group'))
@@ -97,10 +103,32 @@ async def rating_top_book(message: types.Message):
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
 
+
+@rate_limit(limit=3)
+@dp.message_handler(Command('report'))
+async def report_command(message: types.Message):
+
+    try:
+        username = message.values['reply_to_message'].from_user.username
+        text_from_user = message.values['reply_to_message'].text
+        type = message.values['reply_to_message'].chat.type
+
+    except KeyError:
+        await message.bot.send_message(CHAT_ID, f'Найден нарушитель!\n')
+    else:
+        await message.bot.send_message(CHAT_ID, f'Найден нарушитель!\n '
+                                                f'<b>username:</b> <pre>{username}</pre>\n'
+                                                f'<b>type:</b> <pre>{type}</pre>\n'
+                                                f'<b>text:</b>\n <pre>{text_from_user}</pre>')
+
+    return await message.answer('Администратор группы уведомлен 👌\n'
+                                'Все нарушители будут наказаны 👮‍♂')
+
+
 @rate_limit(limit=3)
 @dp.message_handler(regexp=re.compile(r'^/.+'))
 async def other_command(message: types.Message):
-    # Проверям на битую любую битую ссылку
+    # Проверям на любую битую ссылку
     text = f'У меня нет такой комманды 😨\n' \
            f'Попробуй еще раз\n' \
            f'Либо можешь ознакомится со справкой 👉 /help'
