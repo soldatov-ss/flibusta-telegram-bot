@@ -3,7 +3,7 @@ from aiogram.dispatcher import FSMContext
 
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.misc import create_current_name
+from utils.utils import create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_from_request_pages
 from utils.pages.generate_pages import get_page
 from utils.parsing.books import search_books

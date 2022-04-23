@@ -1,33 +1,40 @@
 from aiogram import types
+from utils.restrictions import CheckFromUser
 
 from loader import db
-from utils.misc import check_group_or_bot, check_group_or_bot_for_author_books, check_group_or_bot_for_series_books
 from utils.pages.generate_pages import create_pages
-from utils.parsing.series import description_series
+from utils.parsing.authors import author_books
+from utils.parsing.series import description_series, series_books
 
 
 async def get_from_request_pages(chat: types.Chat, func, method: str, url: str):
-    request_info = await check_group_or_bot(chat, url, func=func, method=method)
+    request_info = await CheckFromUser(chat, url, function=func, method=method).check_chat_type()
     if not request_info: return
-    res_dict, count_items, _ = request_info
+
+    res_dict, count_items = request_info
     list_pages = create_pages(res_dict, count_items, method)
     return list_pages
 
 
 async def get_from_request_author_pages(chat: types.Chat, url: str):
-    request_info = await check_group_or_bot_for_author_books(chat, url)
+
+    request_info = await CheckFromUser(
+        chat, url, function=author_books, method='book').check_chat_type()
+
     if not request_info: return
-    book_dict, count_books, _, author_name = request_info
+    book_dict, count_books, author_name = request_info
 
     list_pages = create_pages(book_dict, count_items=count_books, flag='author_books')
     return list_pages, count_books, author_name
 
 
 async def get_from_request_series_pages(chat: types.Chat, url: str, link: str):
-    request_info = await check_group_or_bot_for_series_books(chat, url, link)
+
+    request_info = await CheckFromUser(
+        chat, url, function=series_books, method='book').result_for_series_book(link)
     if not request_info: return
 
-    book_dict, count_books, _, soup = request_info
+    book_dict, count_books, soup = request_info
     list_pages = create_pages(book_dict, count_items=count_books, flag='series_books')
 
     series_name, series_author, series_genres = description_series(soup)  # Описание серии

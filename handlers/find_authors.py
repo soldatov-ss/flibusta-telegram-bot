@@ -6,7 +6,7 @@ from keyboards.inline.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.inline.formats import languages_call
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.misc import create_current_name
+from utils.utils import create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_author_pages, get_from_request_pages, \
     get_from_request_author_pages
 from utils.pages.generate_pages import get_page

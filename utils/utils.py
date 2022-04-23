@@ -1,3 +1,5 @@
+import hashlib
+
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContextProxy
 
@@ -20,7 +22,6 @@ async def get_message_text(message: types.Message | FSMContextProxy, method: str
         current_res = message.text
 
     return current_res
-
 
 
 async def create_list_choices(message: types.Message):
@@ -47,3 +48,27 @@ async def create_list_choices(message: types.Message):
         return
 
     return result
+
+
+def check_link(link: str):
+    # /b_101112@my_flibusta_bot
+    link = link.replace('_', '/')
+    if '@' in link:
+        link = link[:link.find('@')]
+    # /b/101112
+    return link
+
+
+def create_current_name(chat_type: str, name: str, flag=False):
+    # Проверка, откуда запрос, с бота или с группы ибо есть ограничения в боте, в группе же нету
+    # Хешируем, чтобы обойти ограничение в 64 байта для CallbackData
+
+    if chat_type == 'private':
+        current_item = 'bot' + name
+    else:
+        current_item = 'group' + name
+    if not flag:  # Только для авторов и книг с серии
+        current_item_hash = hashlib.md5(current_item.encode()).hexdigest()
+    else:
+        current_item_hash = current_item
+    return current_item_hash

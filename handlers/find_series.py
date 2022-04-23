@@ -2,11 +2,11 @@ import re
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from utils.utils import check_link, create_current_name
 
 from keyboards.inline.big_keyboard import big_pagination, get_big_keyboard
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
-from utils.misc import check_link, create_current_name
 from utils.pages.generate_list_pages import get_list_pages, get_series_pages, get_from_request_pages, \
     get_from_request_series_pages
 from utils.pages.generate_pages import get_page
