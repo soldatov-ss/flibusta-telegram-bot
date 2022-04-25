@@ -4,8 +4,8 @@ from aiogram import types
 from aiogram.dispatcher.storage import FSMContextProxy
 
 from .check_args import check_args
-from utils.pages.strings import strings_for_user_into_bot
 from utils.parsing.general import get_without_register, get
+from .pages.strings import no_result_message
 
 
 async def get_message_text(message: types.Message | FSMContextProxy, method: str):
@@ -43,7 +43,7 @@ async def create_list_choices(message: types.Message):
         else:
             result.append(i.text.split()[1].title())
     if not result:
-        empty_message = strings_for_user_into_bot(no_result_message='book')
+        empty_message = no_result_message(method='book')
         await message.answer(empty_message)
         return
 

@@ -1,7 +1,7 @@
 from aiogram import types
 
 from loader import bot
-from utils.pages.strings import strings_for_user_into_bot
+from utils.pages.strings import books_not_available, no_result_message, message_into_bot
 from utils.parsing.general import get, get_without_register
 
 
@@ -39,15 +39,16 @@ class CheckFromUser:
 
         if not data_with_register:
             # Ничего не найдено по запросу
-            self.text = strings_for_user_into_bot(no_result_message=self.method)
+            self.text = no_result_message(method=self.method)
 
         elif not data_without_register and data_with_register:
             # Книги доступны только в группе
-            self.text = strings_for_user_into_bot(danger_message=True)
+            self.text = books_not_available()
 
         elif data_without_register:
             # Книги доступные в боте
-            self.text = strings_for_user_into_bot(second_message=self.method)
+            self.text = message_into_bot(self.method)
+            await self.send_message()
             return data_without_register
 
         await self.send_message()
@@ -58,7 +59,7 @@ class CheckFromUser:
         data_with_register = self.function(self.soup_with_register)
 
         if not data_with_register:
-            self.text = strings_for_user_into_bot(no_result_message=self.method)
+            self.text = no_result_message(method=self.method)
             await self.send_message()
         else:
             return data_with_register
