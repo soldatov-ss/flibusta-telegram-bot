@@ -1,8 +1,14 @@
-from . import downloads
-from . import admin
-from . import chosen_links
-from . import find_authors
-from . import find_series
-from . import other_commands
-from . import main_handler
-from . import find_books
+from .groups import dp
+
+from .downloads import dp
+from .admin import dp
+from .chosen_links import dp
+from .find_authors import dp
+from .find_series import dp
+
+from .private import dp
+from .main_handler import dp
+from .find_books import dp
+
+
+__all__ = ["dp"]
