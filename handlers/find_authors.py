@@ -24,7 +24,7 @@ async def author_command(message: types.Message | FSMContextProxy):
     url = f'http://flibusta.is//booksearch?ask={author}&cha=on'
 
     current_author_hash = create_current_name(message.chat.type, author.title())
-    authors_pages, flag = await get_list_pages(current_author_hash, message.chat, url, method='author',
+    authors_pages, data_from_db = await get_list_pages(current_author_hash, message.chat, url, method='author',
                                                func=search_authors)
 
     if authors_pages:
@@ -33,11 +33,12 @@ async def author_command(message: types.Message | FSMContextProxy):
         await message.answer(current_page_text, reply_markup=get_small_keyboard(
             count_pages=len(authors_pages), key=current_author_hash, method='author'))
 
-        if flag: # Обновляем в БД данные по доступным авторам
+        if data_from_db: # Обновляем в БД данные по доступным авторам
             updated_list_pages = await get_from_request_pages(message.chat, func=search_authors, method='author', url=url)
             await db.update_book_pages(current_author_hash, updated_list_pages, table_name='author_pages')
 
 
+@rate_limit(limit=3)
 @dp.callback_query_handler(languages_call.filter())
 async def current_languages(call: types.CallbackQuery, callback_data: dict):
     # Вывод списока доступных книг по выбранному языку
@@ -51,7 +52,7 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
     book_pages = await get_author_pages(current_author_link, call.message.chat, url)
 
     if book_pages:
-        book_pages, author_name, count_books, flag = book_pages
+        book_pages, author_name, count_books, data_from_db = book_pages
 
         current_page = get_page(book_pages, author=[author_name, count_books])
         await call.message.answer(current_page,
@@ -59,7 +60,7 @@ async def current_languages(call: types.CallbackQuery, callback_data: dict):
                                                                 key=current_author_link, method='author_books'))
         await call.answer()
 
-        if flag: # Обновляем в БД данные по доступным книгам
+        if data_from_db: # Обновляем в БД данные по доступным книгам
             updated_list_pages, count_books, _ = await get_from_request_author_pages(call.message.chat, url=url)
             await db.update_author_pages(updated_list_pages, current_author_link, count_books)
 

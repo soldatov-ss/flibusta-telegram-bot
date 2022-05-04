@@ -12,9 +12,7 @@ headers = {'user-agent': user}
 data = {
     'name': config.CITE_LOGIN,
     'pass': config.CITE_PASS,
-    'form_build_id': config.FORM_BUILD_ID,
     'form_id': 'user_login',
-    'op': 'Вход в систему'
 }
 
 

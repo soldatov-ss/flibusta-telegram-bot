@@ -45,28 +45,28 @@ async def get_from_request_series_pages(chat: types.Chat, url: str, link: str):
 async def get_list_pages(current_name, chat: types.Chat, url: str, method: str, func):
     # Получаем список с результатом, если есть в БД - выводим
     # Если нету в БД - парсим и добавляем в БД
-    flag = False
+    data_from_db = False
     pages = await db.select_pages(current_name, f'{method}_pages')
 
     if pages:
         list_pages = pages[1]
-        flag = True
+        data_from_db = True
     else:
         list_pages = await get_from_request_pages(chat, func, method, url)
         if list_pages: await db.add_new_pages(f'{method}_pages', list_pages, current_name)
 
-    return list_pages, flag
+    return list_pages, data_from_db
 
 
 async def get_author_pages(current_book_hash, chat: types.Chat, url: str):
     # Получаем список с результатом, если есть в БД - выводим
     # Если нету в БД - парсим и добавляем в БД
-    flag = False
+    data_from_db = False
 
     pages = await db.select_pages(current_book_hash, 'author_book_pages', 'author_name', 'pages', 'сount_books')
     if pages:
         _, list_pages, author_name, count_books = pages
-        flag = True
+        data_from_db = True
     else:
         pages = await get_from_request_author_pages(chat, url)
         if not pages: return
@@ -74,19 +74,19 @@ async def get_author_pages(current_book_hash, chat: types.Chat, url: str):
         list_pages, count_books, author_name = pages
         await db.add_new_author_book_pages(list_pages, current_book_hash, count_books, author_name)
 
-    return list_pages, author_name, count_books, flag
+    return list_pages, author_name, count_books, data_from_db
 
 
 async def get_series_pages(current_name_hash, chat: types.Chat, url: str, link: str):
     # Получаем список с результатом, если есть в БД - выводим
     # Если нету в БД - парсим и добавляем в БД
 
-    flag = False
+    data_from_db = False
 
     pages = await db.select_pages(current_name_hash, 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
     if pages:
         _, list_pages, series_info = pages
-        flag = True
+        data_from_db = True
     else:
         pages = await get_from_request_series_pages(chat, url, link)
         if not pages: return
@@ -95,4 +95,4 @@ async def get_series_pages(current_name_hash, chat: types.Chat, url: str, link: 
         series_name, series_author, series_genres = series_info
         await db.add_new_series_book_pages(list_pages, current_name_hash, series_name, series_author, series_genres)
 
-    return list_pages, series_info, flag
+    return list_pages, series_info, data_from_db

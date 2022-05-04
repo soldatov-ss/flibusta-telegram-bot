@@ -180,7 +180,7 @@ class Database:
 
     async def add_new_series_book_pages(self, items, request_name, series_name, series_author, series_genres):
         sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, pages)
-                    VALUES ('{request_name}', '{series_name}', '{series_author}', '{series_genres}', ARRAY[{items}])
+                    VALUES ('{request_name}', '{series_name}', '{series_author[:250]}', '{series_genres}', ARRAY[{items}])
                     ON CONFLICT  DO NOTHING"""
         await self.execute(sql, execute=True)
 

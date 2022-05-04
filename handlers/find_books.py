@@ -19,7 +19,7 @@ async def find_books(message: types.Message):
     url = f'http://flibusta.is//booksearch?ask={message.text}&chb=on'
 
     current_book_hash = create_current_name(message.chat.type, book_name)
-    books_pages, flag = await get_list_pages(current_book_hash, message.chat, url, method='book', func=search_books)
+    books_pages, data_from_db = await get_list_pages(current_book_hash, message.chat, url, method='book', func=search_books)
 
     if books_pages:
         current_page_text = get_page(items_list=books_pages)
@@ -27,7 +27,7 @@ async def find_books(message: types.Message):
         await message.answer(current_page_text, reply_markup=get_small_keyboard(
             count_pages=len(books_pages), key=current_book_hash, method='book'))
 
-        if flag: # Обновляем в БД данные по доступным книгам
+        if data_from_db: # Обновляем в БД данные по доступным книгам
             updated_list_pages = await get_from_request_pages(message.chat, func=search_books, method='book', url=url)
             await db.update_book_pages(current_book_hash, updated_list_pages, table_name='book_pages')
 

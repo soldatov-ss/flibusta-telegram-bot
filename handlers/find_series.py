@@ -24,7 +24,7 @@ async def series_command(message: types.Message):
     url = f'http://flibusta.is/booksearch?ask={series_name}&chs=on'
 
     current_series_hash = create_current_name(message.chat.type, series_name.title())
-    series_pages, flag = await get_list_pages(current_series_hash, message.chat, url, method='series',
+    series_pages, data_from_db = await get_list_pages(current_series_hash, message.chat, url, method='series',
                                               func=search_series)
     if series_pages:
         current_page = get_page(series_pages)
@@ -32,12 +32,13 @@ async def series_command(message: types.Message):
         await message.answer(current_page, reply_markup=get_small_keyboard(
             count_pages=len(series_pages), key=current_series_hash, method='series'))
 
-        if flag:
+        if data_from_db:
             updated_list_pages = await get_from_request_pages(message.chat, func=search_series, method='series',
                                                               url=url)
             await db.update_book_pages(current_series_hash, updated_list_pages, table_name='series_pages')
 
 
+@rate_limit(limit=3)
 @dp.message_handler(regexp=re.compile(r'(^/sequence_\d+)|(^/sequence_\d+@)'))
 async def chosen_link_series(message: types.Message):
     # Все книги выбранной книжной серии
@@ -48,13 +49,13 @@ async def chosen_link_series(message: types.Message):
 
     book_pages = await get_series_pages(current_series_link_hash, message.chat, url, link)
     if book_pages:
-        series_pages, series_info, flag = book_pages
+        series_pages, series_info, data_from_db = book_pages
         current_page_text = get_page(items_list=series_pages, series_lst=series_info)
 
         await message.answer(current_page_text, reply_markup=get_big_keyboard(
             count_pages=len(series_pages), key=current_series_link_hash, method='series_books'))
 
-        if flag:  # Обновляем в БД данные по доступным книгам
+        if data_from_db:  # Обновляем в БД данные по доступным книгам
             updated_list_pages, series_info = await get_from_request_series_pages(message.chat, url, link)
             await db.update_book_pages(current_series_link_hash, updated_list_pages,
                                        table_name='series_book_pages', column='pages')
@@ -83,7 +84,6 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 @dp.callback_query_handler(big_pagination.filter())
 async def characters_page_callback(call: types.CallbackQuery, callback_data: dict):
     try:
-        # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
         current_series_name, series_pages, series_info = await db.select_pages(
             callback_data['key'], 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
     except TypeError:
