@@ -29,3 +29,15 @@ async def delete_table(message: types.Message):
         await db.delete_table_pages()
         await db.create_tables()
     return await message.answer('Таблицы были удалены!')
+
+
+@dp.message_handler(content_types=types.ContentType.NEW_CHAT_MEMBERS)
+async def check_new_user(message: types.Message):
+    '''
+    Проверка нового юзера вступившего в группу, чтобы не было ботов в группе
+    '''
+    new_user = message.new_chat_members[0]
+
+    if new_user.is_bot:
+        return await dp.bot.kick_chat_member(message.chat.id, new_user.id)
+

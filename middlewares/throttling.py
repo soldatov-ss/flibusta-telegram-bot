@@ -47,9 +47,7 @@ class ThrottlingMiddleware(BaseMiddleware):
         elif throttled.exceeded_count == 3:
             await msg.reply(f'⚠ Всё. Больше не отвечу, пока не пройдет {round(delta, 3)} секунд')
             return
-        thr = await dispatcher.check_key(key)
-        if thr.exceeded_count == throttled.exceeded_count:
-            await msg.reply("⚠ Все, теперь отвечаю.")
+
 
     async def on_process_message(self, message, data):
         await self.throttle(message)

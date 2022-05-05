@@ -2,7 +2,7 @@ import re
 
 from aiogram import types
 
-from keyboards.inline.formats import get_language, get_formats
+from keyboards.inline.other_keyboards import get_language, get_formats
 from loader import dp, db
 from utils.utils import check_link
 from utils.parsing.authors import languages
@@ -37,14 +37,34 @@ async def chosen_link_author(message: types.Message):
 async def chosen_link_book(message: types.Message):
     # Ловим линк и выводим доступные форматы для скачивания
     link = check_link(message.text)  # обрезаем лишнее в ссылке
-    url = f'http://flibusta.is{link}'
-    soup = await get(url)
 
-    formats_list = parsing_formats(soup)
-    descr, author, book = description(soup)
+    book, author, file_formats, descr = await get_book_description(link)
+
     text = f'Автор: <b>{author}</b>\n\n' \
            f'📖 <b>{book}</b>\n\n' \
            f'Описание: \n' \
            f'<i>{descr}</i>'
-    await message.answer(text=text,
-                         reply_markup=get_formats(formats_lst=formats_list, link=link))
+
+    await message.answer(text=text, reply_markup=get_formats(formats_lst=file_formats, link=link))
+
+
+async def get_book_description(link):
+
+    url = f'http://flibusta.is{link}'
+    data = await db.select_book(link=link)
+
+    if data and data.get('description'):
+
+        descr = data.get('description')
+        author = data.get('author')
+        book = data.get('book_name')
+        formats_list = data.get('formats').split(':')
+    else:
+        soup = await get(url)
+        formats_list = parsing_formats(soup)
+
+        descr, author, book = description(soup)
+        formats = ':'.join(formats_list)
+        await db.insert_book(book=book, link=link, author=author, formats=formats, description=descr)
+
+    return book, author, formats_list, descr

@@ -3,7 +3,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.storage import FSMContextProxy
 
 from keyboards.inline.big_keyboard import get_big_keyboard, big_pagination
-from keyboards.inline.formats import languages_call
+from keyboards.inline.other_keyboards import languages_call
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
 from utils.utils import create_current_name

@@ -40,23 +40,26 @@ class Database:
     async def create_tables(self):
 
         #  Таблица для хранения пользователей
-        create_table_user = '''
+        users = '''
         CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
         full_name VARCHAR(255) NOT NULL,
         telegram_id BIGINT NOT NULL UNIQUE
         )
         '''
-        # таблица для храниния рейтинга скачанных книг
-        create_table_books = '''
+        # таблица для храниния книг
+        books = '''
         CREATE TABLE IF NOT EXISTS books (
         book_id SERIAL PRIMARY KEY,
         book_name VARCHAR(255) NOT NULL,
         link VARCHAR(255) NOT NULL UNIQUE,
-        downloaded BIGINT NOT NULL
+        downloaded BIGINT NOT NULL,
+        author VARCHAR(255),
+        formats VARCHAR(255),
+        description TEXT
         )
         '''
-        create_table_authors = '''
+        authors = '''
         CREATE TABLE IF NOT EXISTS authors (
         author_id SERIAL PRIMARY KEY,
         author_name VARCHAR(255) NOT NULL,
@@ -65,7 +68,7 @@ class Database:
         )
         '''
         # Таблица для хранения страниц с результатами запросов и названиями запросов
-        create_table_book_pages = '''
+        book_pages = '''
         CREATE TABLE IF NOT EXISTS book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
@@ -73,7 +76,7 @@ class Database:
         )
         '''
         # Хранение страниц с авторами
-        create_table_author_pages = '''
+        author_pages = '''
         CREATE TABLE IF NOT EXISTS author_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
@@ -81,7 +84,7 @@ class Database:
         )
         '''
         # Страницы с книжными сериями по запросу
-        create_table_series_pages = '''
+        series_pages = '''
         CREATE TABLE IF NOT EXISTS series_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
@@ -89,7 +92,7 @@ class Database:
         )
         '''
         # Книги по выбронному автору
-        create_table_author_books_pages = '''
+        author_books_pages = '''
         CREATE TABLE IF NOT EXISTS author_book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
@@ -99,7 +102,7 @@ class Database:
         )
         '''
         # Книги по выбранной серии
-        create_table_series_books_pages = '''
+        series_books_pages = '''
         CREATE TABLE IF NOT EXISTS series_book_pages (
         pages_id SERIAL PRIMARY KEY,
         request_name VARCHAR(255) NOT NULL UNIQUE,
@@ -109,9 +112,20 @@ class Database:
         pages text[]
         )
         '''
-        list_tables = [create_table_user, create_table_books, create_table_authors,
-                       create_table_book_pages, create_table_author_pages, create_table_series_pages,
-                       create_table_author_books_pages, create_table_series_books_pages]
+
+        book_formats = '''
+        CREATE TABLE IF NOT EXISTS book_formats (
+        format_id  SERIAL PRIMARY KEY,
+        book_id  INT NOT NULL UNIQUE,
+        fb2 VARCHAR(255), 
+        epub VARCHAR(255), 
+        mobi VARCHAR(255), 
+        download VARCHAR(255),
+        FOREIGN KEY(book_id) REFERENCES books(book_id)
+        )
+        '''
+        list_tables = [users, books, authors, book_pages, author_pages, series_pages,
+                       author_books_pages, series_books_pages, book_formats]
 
         for table in list_tables:
             await self.execute(table, execute=True)
@@ -122,12 +136,54 @@ class Database:
         await self.execute(sql, execute=True)
 
 
-    async def rating_book(self, book: str, link: str):
-        # Добавляет книгу в рейтинг, если уже есть в таблице - обновляет счетчик скачанных книг
-        sql = f'''INSERT INTO books(book_name, link, downloaded)  VALUES('{book}', '{link}', 1)
-                    ON CONFLICT (link) DO UPDATE 
-                    SET downloaded = 1 + (SELECT downloaded from books where link = '{link}')'''
+    async def insert_book(self, book: str, link: str, author: str, formats: str, description: str):
+        sql = f'''
+            INSERT INTO books(book_name, link, downloaded, author, formats, description)  
+            VALUES('{book}', '{link}', 1, '{author}', '{formats}', '{description}')
+            ON CONFLICT (link) DO UPDATE SET 
+            author = '{author}',
+            formats = '{formats}',
+            description = '{description}' 
+            '''
         await self.execute(sql, execute=True)
+
+
+    async def select_file_id(self, link, format):
+        # Получаем file_id книги
+        sql = f'''
+            SELECT {format} FROM book_formats 
+            JOIN books USING(book_id) 
+            WHERE link = '{link}'
+        '''
+        return await self.execute(sql, fetchval=True)
+
+    async def insert_file_id(self, link, format, file_id):
+        # Обновляем file_id к соответствующему формату
+        sql = f'''
+            INSERT INTO book_formats (book_id, {format}) VALUES 
+            ((SELECT book_id FROM books WHERE link = '{link}'), '{file_id}') 
+            ON CONFLICT (book_id) DO UPDATE
+            SET {format} = '{file_id}'
+        '''
+        return await self.execute(sql, fetchval=True)
+
+
+    async def update_count_downloaded(self, link: str):
+        # Обновляем рейтинг выбранной книги
+        sql = f'''
+            UPDATE books SET
+             downloaded = 1 + downloaded
+            WHERE link = '{link}'
+        '''
+        await self.execute(sql, execute=True)
+
+
+    async def select_book(self, link):
+        sql = f'''
+            SELECT book_name, author, formats, description FROM BOOKS WHERE link = '{link}'
+                '''
+        res = await self.execute(sql, fetchrow=True)
+        return res if res else None
 
 
     async def rating_author(self, author: str, link: str):
@@ -137,12 +193,10 @@ class Database:
                     SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
         await self.execute(sql, execute=True)
 
-
     async def select_count_values(self, table_name):
         # Выводит кол-во скачанных книг, либо кол-во юзеров
         count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
         return count
-
 
     async def rating_top_10_values(self, table):
         # Возвращаем топ 10 книг или авторов по запросам и скачиваниям
@@ -170,20 +224,17 @@ class Database:
 
         await self.execute(sql, execute=True)
 
-
     async def add_new_author_book_pages(self, items, request_name, count_books, author):
         sql = f"""INSERT INTO author_book_pages(request_name, author_name, сount_books, pages)
                     VALUES ('{request_name}', '{author}', {count_books}, ARRAY[{items}])
                     ON CONFLICT DO NOTHING"""
         await self.execute(sql, execute=True)
 
-
     async def add_new_series_book_pages(self, items, request_name, series_name, series_author, series_genres):
         sql = f"""INSERT INTO series_book_pages(request_name, series_name, series_author, series_genres, pages)
                     VALUES ('{request_name}', '{series_name}', '{series_author[:250]}', '{series_genres}', ARRAY[{items}])
                     ON CONFLICT  DO NOTHING"""
         await self.execute(sql, execute=True)
-
 
     async def select_pages(self, request_name, table_name, *args):
         if args:
@@ -196,7 +247,6 @@ class Database:
 
         return self.get_args(res[0], table_name)
 
-
     async def update_author_pages(self, pages: list, request_name: str, count_books: int):
         sql = f"""
                 UPDATE author_book_pages SET pages = ARRAY[{pages}],
@@ -204,12 +254,9 @@ class Database:
                 """
         await self.execute(sql, execute=True)
 
-
     async def update_book_pages(self, request_name, pages, table_name, column='pages'):
         sql = f"UPDATE {table_name} SET {column} = ARRAY[{pages}] WHERE request_name='{request_name}'"
         await self.execute(sql, execute=True)
-
-
 
     @staticmethod
     def get_args(result, table_name):

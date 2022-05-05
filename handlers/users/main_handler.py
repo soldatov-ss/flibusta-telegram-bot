@@ -1,10 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
-from handlers.find_authors import author_command
-from handlers.find_books import find_books
-from handlers.find_series import series_command
-from keyboards.inline.formats import get_requests, result_request
+from handlers.users.find_authors import author_command
+from handlers.users.find_books import find_books
+from handlers.users.find_series import series_command
+from keyboards.inline.other_keyboards import get_requests, result_request
 from loader import dp
 from utils.throttlig import rate_limit
 from utils.utils import create_list_choices
