@@ -95,13 +95,3 @@ async def rating_top_book(message: types.Message):
     descr = f'ТОП 10 АВТОРОВ'
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
-
-
-@rate_limit(limit=3)
-@dp.message_handler(regexp=re.compile(r'^/.+'))
-async def other_command(message: types.Message):
-    # Проверям на любую битую ссылку
-    text = f'У меня нет такой комманды 😨\n' \
-           f'Попробуй еще раз\n' \
-           f'Либо можешь ознакомится со справкой 👉 /help'
-    return await message.answer(text)

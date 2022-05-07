@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 
+from filters import IsBot
 from handlers.users.find_authors import author_command
 from handlers.users.find_books import find_books
 from handlers.users.find_series import series_command
@@ -11,7 +12,7 @@ from utils.utils import create_list_choices
 
 
 @rate_limit(limit=3)
-@dp.message_handler()
+@dp.message_handler(IsBot())
 async def main_handler(message: types.Message, state: FSMContext):
     '''
     Принимает запрос от юзера и выводит клавиатуру, с доступными вариантами (книги автора, книги, серии)

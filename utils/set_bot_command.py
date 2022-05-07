@@ -20,6 +20,7 @@ async def set_admin_commands(dp, chat_id):
         [
             BotCommand("rating_user", "Кол-во пользователей"),
             BotCommand("rating_book", "Кол-во скачанных книг"),
+            BotCommand("log_file", "Получить файл с логгами"),
             BotCommand("author", "Поиск книг по автору"),
             BotCommand("series", "Поиск книг по названию серии"),
             BotCommand("rating_b", "топ 10 книг"),

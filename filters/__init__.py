@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
 from .is_reply import IsReplyFilter
-from .chat_filters import IsGroup, IsPrivate
+from .chat_filters import IsGroup, IsPrivate, IsBot
 
 def setup(dp: Dispatcher):
     text_messages = [
@@ -13,3 +13,4 @@ def setup(dp: Dispatcher):
     dp.filters_factory.bind(IsReplyFilter, event_handlers=text_messages)
     dp.filters_factory.bind(IsGroup, event_handlers=text_messages)
     dp.filters_factory.bind(IsPrivate, event_handlers=text_messages)
+    dp.filters_factory.bind(IsBot, event_handlers=text_messages)

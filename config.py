@@ -18,3 +18,31 @@ DB_NAME = env.str('DB_NAME')
 
 CHAT_ID = env.str('ADMINS')
 GROUP_ID = env.str('GROUP_ID')
+
+logger_config = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'std_format': {
+            'format': '{asctime}: {levelname}: {name}: {module}-{funcName}={lineno}: {message}',
+            'style': '{'
+        }
+    },
+
+    'handlers': {
+        'console': {
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'level': 'ERROR',
+            'formatter': 'std_format'
+        }
+    },
+
+    'loggers': {
+        'app_logger': {
+            'level': 'ERROR',
+            'handlers': ['console']
+        }
+    }
+}

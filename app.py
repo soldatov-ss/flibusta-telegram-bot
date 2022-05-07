@@ -6,7 +6,13 @@ from loader import dp, db
 
 async def on_startup(dispatcher):
     import middlewares, handlers
+    import logging.config
     from utils.set_bot_command import set_default_commands, set_admin_commands, set_group_commands
+    from config import logger_config
+
+    logging.config.dictConfig(logger_config)
+
+
     await db.create()
     await db.create_tables()
     await set_default_commands(dp)

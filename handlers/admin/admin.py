@@ -1,5 +1,9 @@
+import pathlib
+
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from aiogram.types import InputFile
+from aiogram.utils.exceptions import BadRequest, TelegramAPIError
 
 from config import CHAT_ID
 from loader import dp, db
@@ -31,13 +35,14 @@ async def delete_table(message: types.Message):
     return await message.answer('Таблицы были удалены!')
 
 
-@dp.message_handler(content_types=types.ContentType.NEW_CHAT_MEMBERS)
-async def check_new_user(message: types.Message):
-    '''
-    Проверка нового юзера вступившего в группу, чтобы не было ботов в группе
-    '''
-    new_user = message.new_chat_members[0]
+@dp.message_handler(Command('log_file'))
+async def send_log_file(message: types.Message):
 
-    if new_user.is_bot:
-        return await dp.bot.kick_chat_member(message.chat.id, new_user.id)
+    path = pathlib.Path('debug.log').resolve()
+    file = InputFile(path)
+    try:
+        await message.answer_document(file)
+    except TelegramAPIError:
+        await message.answer('Ошибок пока не было замечено\n'
+                             'Лог файл пуст 👌')
 
