@@ -31,13 +31,13 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
 
     file_id = await db.select_file_id(link=link, format=format_file)
     message = await call.message.answer(f'Ожидайте, начинаю скачивать книгу 🙃')
-
-    try:
-        await call.message.answer_document(file_id, caption=author)
-        await call.answer()
-
-    except BadRequest:
-
+    if file_id:
+        try:
+            await call.message.answer_document(file_id, caption=author)
+            await call.answer()
+        except BadRequest:
+            pass
+    else:
         file = await get_file(message, callback_data['format_file'], url, book)
         if not file: return
 

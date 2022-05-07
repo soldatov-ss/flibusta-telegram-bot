@@ -25,6 +25,7 @@ _____________
 -------
 -/rating_book - общее кол-во скачанных книг;\
 -/rating_user - общее кол-во пользователей, которые запускали бота;\
+-/log-file - получить файл с логгами
 __________
 
 <img src=screenshots/scr1.jpg width="222"/> , <img src=screenshots/scr3.jpg width="250"/>

@@ -8,7 +8,7 @@ from aiogram.utils.exceptions import BadRequest, TelegramAPIError
 from config import CHAT_ID
 from loader import dp, db
 from utils.throttlig import rate_limit
-
+from aiofile import async_open
 
 @rate_limit(limit=3)
 @dp.message_handler(Command('rating_book'))
@@ -42,6 +42,8 @@ async def send_log_file(message: types.Message):
     file = InputFile(path)
     try:
         await message.answer_document(file)
+        async with async_open(path, 'w') as data:               # Очищаем лог файл, чтобы не было мусора
+            await data.write(' ')
     except TelegramAPIError:
         await message.answer('Ошибок пока не было замечено\n'
                              'Лог файл пуст 👌')
