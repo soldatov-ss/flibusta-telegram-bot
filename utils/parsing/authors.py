@@ -37,11 +37,12 @@ def languages(soup):
     res = soup.find('div', id='main').find('select')
     variables_lang = [lang.text for lang in res][1:]
     author = soup.find('h1', class_='title').text
-
     for item in variables_lang:
-        abbr = item.split()[1].replace('(', '').replace(')', '')  # Абревиатура языка
-        lang = item.split()[0].title()
-
+        try:
+            abbr = item.split()[1].replace('(', '').replace(')', '')  # Абревиатура языка
+            lang = item.split()[0].title()
+        except IndexError:                  # Ловим ошибку, на тот случай если будет не стандарный язык без аббревиатуры
+            pass
         if len(variables_lang) <= 3:
             only_three_lang.append(lang)
             abbr_lang.append(abbr)

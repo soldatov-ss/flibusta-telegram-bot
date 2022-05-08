@@ -1,6 +1,6 @@
 from aiogram import executor
 
-from config import CHAT_ID, GROUP_ID
+from config import ADMIN_ID, GROUP_ID
 from loader import dp, db
 
 
@@ -16,7 +16,7 @@ async def on_startup(dispatcher):
     await db.create()
     await db.create_tables()
     await set_default_commands(dp)
-    await set_admin_commands(dp, chat_id=CHAT_ID)
+    await set_admin_commands(dp, chat_id=ADMIN_ID)
     await set_group_commands(dp, GROUP_ID)
 
 

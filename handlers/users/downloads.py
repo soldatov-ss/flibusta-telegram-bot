@@ -44,6 +44,7 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
         try:
             future_file_id = await call.message.answer_document(file, caption=author)
             await call.answer()
+            file_id = future_file_id.document.file_id
 
         except NetworkError:  # Ловим ограничение по отправке файлов весом больше 50 метров
             return await message.edit_text(f'Не могу отправить файл т.к. в телеграме есть огранчиния по весу файлов😔\n'
@@ -52,11 +53,12 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
         except InvalidQueryID:  # Ловим ошибку на длительную скачивание/отправку
             pass
 
-        file_id = future_file_id.document.file_id
+
+
         await db.insert_file_id(link=link, format=format_file, file_id=file_id)
 
     await db.update_count_downloaded(link=link)  # кол-во скачиваний
-
+    await db.update_user_downloads(user_id=call.from_user.id) # кол-во загрузок у юзера
 
 
 async def get_file(message: types.Message, format_file: str, url: str, book: str):
@@ -67,11 +69,11 @@ async def get_file(message: types.Message, format_file: str, url: str, book: str
     try:
         res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
         response.close()
+        file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{book}.{format_file}')
 
     except AttributeError:
 
-        return await message.edit_text('Упс! Возникли небольшие неполадки на сервере 😲\n'
+        await message.edit_text('Упс! Возникли небольшие неполадки на сервере 😲\n'
                                        'Попробуй скачать книгу в другом формате 🙌\n')
-
-    file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{book}.{format_file}')
+        return
     return file

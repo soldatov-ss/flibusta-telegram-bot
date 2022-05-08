@@ -43,7 +43,7 @@ async def chosen_link_book(message: types.Message):
     text = f'Автор: <b>{author}</b>\n\n' \
            f'📖 <b>{book}</b>\n\n' \
            f'Описание: \n' \
-           f'<i>{descr}</i>'
+           f'<i>{descr[:3*1000]}</i>'   # Ограничение на длинну текста
 
     await message.answer(text=text, reply_markup=get_formats(formats_lst=file_formats, link=link))
 

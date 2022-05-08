@@ -44,7 +44,8 @@ class Database:
         CREATE TABLE IF NOT EXISTS users (
         user_id SERIAL PRIMARY KEY,
         full_name VARCHAR(255) NOT NULL,
-        telegram_id BIGINT NOT NULL UNIQUE
+        telegram_id BIGINT NOT NULL UNIQUE,
+        amount BIGINT DEFAULT 0
         )
         '''
         # таблица для храниния книг
@@ -132,7 +133,17 @@ class Database:
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
-        sql = f"INSERT INTO users(full_name, telegram_id) VALUES ('{user}', {telegram_id}) ON CONFLICT  DO NOTHING"
+        sql = f"INSERT INTO users(full_name, telegram_id, amount) VALUES ('{user}', {telegram_id}, 0) ON CONFLICT  DO NOTHING"
+        await self.execute(sql, execute=True)
+
+
+    async def update_user_downloads(self, user_id: int):
+        # Обновляет кол-во загрузок у юзера
+        sql = f'''
+                UPDATE users
+                SET amount = amount + 1
+                WHERE telegram_id = {user_id}
+                '''
         await self.execute(sql, execute=True)
 
 
