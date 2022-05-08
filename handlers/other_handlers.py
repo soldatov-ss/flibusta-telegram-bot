@@ -24,6 +24,7 @@ async def check_new_user(message: types.Message):
     new_user = message.new_chat_members[0]
 
     if new_user.is_bot:
-        await message.answer(f'Пользователь {message.from_user.get_mention()} был кикнут!\n'
+        await message.answer(f'Пользователь {new_user.get_mention()} был кикнут!\n'
                              f'Причина: Вход в группу разрешен только людям 🤖')
-        return await dp.bot.kick_chat_member(message.chat.id, new_user.id)
+        await dp.bot.kick_chat_member(message.chat.id, new_user.id)             # Кик на бота
+        await dp.bot.kick_chat_member(message.chat.id, message.from_user.id)    # Кик на юзера который привел бота

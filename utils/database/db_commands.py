@@ -147,6 +147,12 @@ class Database:
         await self.execute(sql, execute=True)
 
 
+    async def top_users(self):
+        # Возвращает список с топ 10 юзеров по скачиваниям
+        sql = 'SELECT * FROM users ORDER BY amount DESC LIMIT 10'
+        return await self.execute(sql, fetch=True)
+
+
     async def insert_book(self, book: str, link: str, author: str, formats: str, description: str):
         sql = f'''
             INSERT INTO books(book_name, link, downloaded, author, formats, description)  

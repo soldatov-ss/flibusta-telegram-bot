@@ -54,6 +54,7 @@ def description(soup):
     book = book.split()[:-1]
     book = ' '.join(book).replace('"', '').replace("'", '')  # убираем скобки с названия, т.к. выдает ошибку при скачке
     text = text.replace("'", '"')
+    author = author.replace("'", '"')
     if not text:
         text = 'Описание отсутствует'
     elif not author:

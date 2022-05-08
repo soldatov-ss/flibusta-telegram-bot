@@ -8,7 +8,7 @@ from aiogram.utils.exceptions import BadRequest, TelegramAPIError
 from config import ADMIN_ID
 from loader import dp, db
 from utils.throttlig import rate_limit
-from aiofile import async_open
+#from aiofile import async_open
 
 @rate_limit(limit=3)
 @dp.message_handler(Command('rating_book'))

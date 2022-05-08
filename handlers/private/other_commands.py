@@ -1,15 +1,10 @@
-import re
-
 from aiogram import types
 from aiogram.dispatcher.filters import Command, CommandStart
+from aiogram.utils.markdown import hlink
 
-from filters import IsGroup
 from loader import dp, db
-from utils.pages.rating import page_rating
+from utils.pages.rating import page_rating, page_top_users
 from utils.throttlig import rate_limit
-
-
-
 
 
 @rate_limit(limit=3)
@@ -90,6 +85,7 @@ async def rating_top_book(message: types.Message):
     descr = f'ТОП 10 КНИГ'
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
+    await db.top_users()
 
 
 @rate_limit(limit=3)
@@ -100,3 +96,11 @@ async def rating_top_book(message: types.Message):
     descr = f'ТОП 10 АВТОРОВ'
     text = page_rating(rating_dict, descr=descr)
     await message.answer(text)
+
+
+@dp.message_handler(Command('rating_u'))
+async def rating_user(message: types.Message):
+    data = await db.top_users()
+    users_dict = {d.get('full_name'): d.get('amount') for d in data}
+    ended_list = page_top_users(users_dict)
+    await message.answer(ended_list)
