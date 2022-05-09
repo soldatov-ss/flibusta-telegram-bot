@@ -70,7 +70,6 @@ class ThrottlingMiddleware(BaseMiddleware):
 
             await asyncio.sleep(5)
             await service_message.delete()
-            await message.delete()
         try:
             await message.delete()
         except Exception as err:

@@ -16,7 +16,7 @@ def search_authors(soup):
 def author_books(soup):
     # Ищем все книги и линки принадлежащие автору
     res = soup.find('div', id='main').find_all('form', method='POST')
-    author = soup.find('h1', class_='title').text
+    author = soup.find('h1', class_='title').text.replace("'", '"')
     books_dict = {}
     for items in res:
         for item in items.find_all('a'):
@@ -36,7 +36,7 @@ def languages(soup):
     abbr_lang, only_three_lang = [], []
     res = soup.find('div', id='main').find('select')
     variables_lang = [lang.text for lang in res][1:]
-    author = soup.find('h1', class_='title').text
+    author = soup.find('h1', class_='title').text.replace("'", '"')
     for item in variables_lang:
         try:
             abbr = item.split()[1].replace('(', '').replace(')', '')  # Абревиатура языка

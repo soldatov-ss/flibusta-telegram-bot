@@ -39,11 +39,11 @@ async def chosen_link_book(message: types.Message):
     link = check_link(message.text)  # обрезаем лишнее в ссылке
 
     book, author, file_formats, descr = await get_book_description(link)
-
+    description = descr[:3*1000].replace('<', '(').replace('>', ')') # Ограничение на длинну текста и убраны скобки, чтобы не падал бот при выводе
     text = f'Автор: <b>{author}</b>\n\n' \
            f'📖 <b>{book}</b>\n\n' \
            f'Описание: \n' \
-           f'<i>{descr[:3*1000]}</i>'   # Ограничение на длинну текста
+           f'<i>{description}</i>'
 
     await message.answer(text=text, reply_markup=get_formats(formats_lst=file_formats, link=link))
 
