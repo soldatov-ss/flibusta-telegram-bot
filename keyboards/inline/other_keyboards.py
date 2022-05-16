@@ -2,6 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 files_call = CallbackData('file_btns', 'format_file', 'link')
+languages_call = CallbackData('languages', 'language', 'link', 'abbr')
+result_request = CallbackData('result_request', 'choice')
 
 
 def get_formats(formats_lst: list, link: str):
@@ -16,8 +18,6 @@ def get_formats(formats_lst: list, link: str):
         )
     return markup
 
-
-languages_call = CallbackData('languages', 'language', 'link', 'abbr')
 
 
 def get_language(languages_lst: list, link: str, abbr_lst):
@@ -35,7 +35,6 @@ def get_language(languages_lst: list, link: str, abbr_lst):
     return markup
 
 
-result_request = CallbackData('result_request', 'choice')
 
 def get_requests(req_lst: list):
     markup = InlineKeyboardMarkup(row_width=2)

@@ -1,10 +1,11 @@
 from typing import Union
 
 import asyncpg
-from asyncpg import Connection
+from asyncpg import Connection, UndefinedColumnError, PostgresSyntaxError
 from asyncpg.pool import Pool
 
 import config
+from utils.database.tables import create_tables_rows
 
 
 class Database:
@@ -37,99 +38,16 @@ class Database:
                     result = await connection.execute(command, *args)
                 return result
 
+
     async def create_tables(self):
-
-        #  Таблица для хранения пользователей
-        users = '''
-        CREATE TABLE IF NOT EXISTS users (
-        user_id SERIAL PRIMARY KEY,
-        full_name VARCHAR(255) NOT NULL,
-        telegram_id BIGINT NOT NULL UNIQUE,
-        amount BIGINT DEFAULT 0
-        )
-        '''
-        # таблица для храниния книг
-        books = '''
-        CREATE TABLE IF NOT EXISTS books (
-        book_id SERIAL PRIMARY KEY,
-        book_name VARCHAR(255) NOT NULL,
-        link VARCHAR(255) NOT NULL UNIQUE,
-        downloaded BIGINT NOT NULL,
-        author VARCHAR(255),
-        formats VARCHAR(255),
-        description TEXT
-        )
-        '''
-        authors = '''
-        CREATE TABLE IF NOT EXISTS authors (
-        author_id SERIAL PRIMARY KEY,
-        author_name VARCHAR(255) NOT NULL,
-        link VARCHAR(255) NOT NULL UNIQUE,
-        queries BIGINT NOT NULL
-        )
-        '''
-        # Таблица для хранения страниц с результатами запросов и названиями запросов
-        book_pages = '''
-        CREATE TABLE IF NOT EXISTS book_pages (
-        pages_id SERIAL PRIMARY KEY,
-        request_name VARCHAR(255) NOT NULL UNIQUE,
-        pages text[]
-        )
-        '''
-        # Хранение страниц с авторами
-        author_pages = '''
-        CREATE TABLE IF NOT EXISTS author_pages (
-        pages_id SERIAL PRIMARY KEY,
-        request_name VARCHAR(255) NOT NULL UNIQUE,
-        pages text[]
-        )
-        '''
-        # Страницы с книжными сериями по запросу
-        series_pages = '''
-        CREATE TABLE IF NOT EXISTS series_pages (
-        pages_id SERIAL PRIMARY KEY,
-        request_name VARCHAR(255) NOT NULL UNIQUE,
-        pages text[]
-        )
-        '''
-        # Книги по выбронному автору
-        author_books_pages = '''
-        CREATE TABLE IF NOT EXISTS author_book_pages (
-        pages_id SERIAL PRIMARY KEY,
-        request_name VARCHAR(255) NOT NULL UNIQUE,
-        author_name VARCHAR(255),
-        сount_books INT, 
-        pages text[]
-        )
-        '''
-        # Книги по выбранной серии
-        series_books_pages = '''
-        CREATE TABLE IF NOT EXISTS series_book_pages (
-        pages_id SERIAL PRIMARY KEY,
-        request_name VARCHAR(255) NOT NULL UNIQUE,
-        series_name VARCHAR(255),
-        series_author VARCHAR(255), 
-        series_genres VARCHAR(255),
-        pages text[]
-        )
-        '''
-
-        book_formats = '''
-        CREATE TABLE IF NOT EXISTS book_formats (
-        format_id  SERIAL PRIMARY KEY,
-        book_id  INT NOT NULL UNIQUE,
-        fb2 VARCHAR(255), 
-        epub VARCHAR(255), 
-        mobi VARCHAR(255), 
-        download VARCHAR(255),
-        FOREIGN KEY(book_id) REFERENCES books(book_id)
-        )
-        '''
-        list_tables = [users, books, authors, book_pages, author_pages, series_pages,
-                       author_books_pages, series_books_pages, book_formats]
-
-        for table in list_tables:
+        for table in create_tables_rows():
             await self.execute(table, execute=True)
+
+
+
+###################################################################################
+    # Юзеры
+###################################################################################
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
@@ -152,7 +70,47 @@ class Database:
         sql = 'SELECT * FROM users ORDER BY amount DESC LIMIT 10'
         return await self.execute(sql, fetch=True)
 
+###################################################################################
+# Рейтинг
+###################################################################################
+    async def rating_author(self, author: str, link: str):
+        # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
+        sql = f'''INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', 1)
+                    ON CONFLICT (link) DO UPDATE 
+                    SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
+        await self.execute(sql, execute=True)
 
+
+    async def update_count_downloaded(self, link: str):
+        # Обновляем рейтинг выбранной книги
+        sql = f'''
+            UPDATE books SET
+             downloaded = 1 + downloaded
+            WHERE link = '{link}'
+        '''
+        await self.execute(sql, execute=True)
+
+
+    async def select_count_values(self, table_name):
+        # Выводит кол-во скачанных книг, либо кол-во юзеров
+        count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
+        return count
+
+    async def rating_top_10_values(self, table):
+        # Возвращаем топ 10 книг или авторов по запросам и скачиваниям
+        query = 'downloaded' if table == 'book' else 'queries'
+        top = await self.execute(f'SELECT * FROM {table}s ORDER BY {query} DESC LIMIT 10', fetch=True)
+        top_dict = {}
+        for elem in top:
+            link = elem.get('link')
+            link = link[1:].replace('/', '_', 1)
+            top_dict[link] = elem.get(f'{table}_name')
+
+        return top_dict
+
+###################################################################################
+    # Общие функции
+###################################################################################
     async def insert_book(self, book: str, link: str, author: str, formats: str, description: str):
         sql = f'''
             INSERT INTO books(book_name, link, downloaded, author, formats, description)  
@@ -185,16 +143,6 @@ class Database:
         return await self.execute(sql, fetchval=True)
 
 
-    async def update_count_downloaded(self, link: str):
-        # Обновляем рейтинг выбранной книги
-        sql = f'''
-            UPDATE books SET
-             downloaded = 1 + downloaded
-            WHERE link = '{link}'
-        '''
-        await self.execute(sql, execute=True)
-
-
     async def select_book(self, link):
         sql = f'''
             SELECT book_name, author, formats, description FROM BOOKS WHERE link = '{link}'
@@ -202,37 +150,61 @@ class Database:
         res = await self.execute(sql, fetchrow=True)
         return res if res else None
 
-
-    async def rating_author(self, author: str, link: str):
-        # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
-        sql = f'''INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', 1)
-                    ON CONFLICT (link) DO UPDATE 
-                    SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
-        await self.execute(sql, execute=True)
-
-    async def select_count_values(self, table_name):
-        # Выводит кол-во скачанных книг, либо кол-во юзеров
-        count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
-        return count
-
-    async def rating_top_10_values(self, table):
-        # Возвращаем топ 10 книг или авторов по запросам и скачиваниям
-        query = 'downloaded' if table == 'book' else 'queries'
-        top = await self.execute(f'SELECT * FROM {table}s ORDER BY {query} DESC LIMIT 10', fetch=True)
-        top_dict = {}
-        for elem in top:
-            link = elem.get('link')
-            link = link[1:].replace('/', '_', 1)
-            top_dict[link] = elem.get(f'{table}_name')
-
-        return top_dict
-
     async def delete_table_pages(self):
         await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)
 
-    #
-    # Функции для массивов
-    #
+
+
+
+
+###################################################################################
+# Channels
+###################################################################################
+    async def create_post(self, values):
+        # Создаем пост для публикации в канале
+        sql = '''
+        INSERT INTO channel_post(user_id, url, book, author, link, description) VALUES
+        ('{user_id}', '{url}', '{book}', '{author}', '{link}', '{description}') ON CONFLICT DO NOTHING
+        RETURNING post_id
+        '''.format(**values)
+        post_id = await self.execute(sql, fetchrow=True)
+        return post_id.get('post_id')
+
+
+    async def update_post(self, column, value, post_id):
+        # Обновляем пост
+        sql = '''
+        UPDATE channel_post SET {} = '{}' WHERE post_id = '{}' RETURNING *
+        '''.format(column, value, post_id)
+        return  await self.execute(sql, fetchrow=True)
+
+
+    async def check_link(self, link):
+        # Проверка ссылки в БД
+        sql = "SELECT link FROM books WHERE link = '{}'".format(link)
+        try:
+            link = await self.execute(sql, fetchrow=True)
+            link = link.get('link')
+        except UndefinedColumnError:
+            return False
+        except AttributeError:
+            return False
+        except PostgresSyntaxError:
+            return False
+        return link
+
+    async def select_post(self, post_id):
+        sql = f'SELECT * FROM channel_post WHERE post_id = {post_id}'
+        return await self.execute(sql, fetchrow=True)
+
+
+    async def delete_post(self, post_id):
+        sql = f'DELETE FROM channel_post WHERE post_id = {post_id}'
+        await self.execute(sql, execute=True)
+
+###################################################################################
+    # Массивы
+###################################################################################
     async def add_new_pages(self, table_name, items, request_name):
         sql = f"""
         INSERT INTO {table_name}(request_name, pages) 

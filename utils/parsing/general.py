@@ -2,6 +2,7 @@ import tempfile
 
 import aiohttp
 import fake_useragent
+from aiogram import types
 from bs4 import BeautifulSoup
 
 import config
@@ -44,3 +45,15 @@ async def get_without_register(url):
             res = await response.text()
             soup = BeautifulSoup(res, 'lxml')
             return soup
+
+
+
+async def check_chat_type(chat: types.Chat, url: str):
+    '''
+    :return: object of BeautifulSoup
+    '''
+    if chat.type == 'private':
+        soup = await get_without_register(url)
+    else:
+        soup = await get(url)
+    return soup

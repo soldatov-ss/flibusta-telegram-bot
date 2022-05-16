@@ -18,6 +18,7 @@ DB_NAME = env.str('DB_NAME')
 
 ADMIN_ID = env.str('ADMINS')
 GROUP_ID = env.str('GROUP_ID')
+channels = env.str('CHANNEL_ID')
 
 logger_config = {
     'version': 1,

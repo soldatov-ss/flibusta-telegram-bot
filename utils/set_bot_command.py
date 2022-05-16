@@ -8,6 +8,7 @@ async def set_default_commands(dp):
             BotCommand("author", "Поиск книг по автору"),
             BotCommand("series", "Поиск книг по названию серии"),
             BotCommand("help", "Вывести справку"),
+            BotCommand("create_post", "Опубликовать свой пост в канале"),
             BotCommand("rating_b", "топ 10 книг"),
             BotCommand("rating_a", "топ 10 авторов")
         ]
@@ -23,6 +24,7 @@ async def set_admin_commands(dp, chat_id):
             BotCommand("log_file", "Получить файл с логгами"),
             BotCommand("author", "Поиск книг по автору"),
             BotCommand("series", "Поиск книг по названию серии"),
+            BotCommand("create_post", "Опубликовать свой пост в канале"),
             BotCommand("rating_b", "топ 10 книг"),
             BotCommand("rating_u", "топ 10 юзеров"),
             BotCommand("rating_a", "топ 10 авторов"),

@@ -1,6 +1,5 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command, CommandStart
-from aiogram.utils.markdown import hlink
 
 from loader import dp, db
 from utils.pages.rating import page_rating, page_top_users
@@ -40,6 +39,11 @@ async def command_help(message: types.Message):
 @dp.message_handler(CommandStart())
 async def command_start(message: types.Message):
 
+    from handlers.users.chosen_links import chosen_link_book
+
+    if message.get_args():      # Юзер пришел с канала, нажав на кнопку "скачать"
+        return await chosen_link_book(message)
+
     text = f'Привет, {message.from_user.full_name}! \n\n' \
            f'Я помогу найти тебе любую книгу!😇\n' \
            f'Чтобы начать, пришли мне название книги 📖\n\n' \
@@ -54,6 +58,7 @@ async def command_start(message: types.Message):
 
     await message.answer(text)
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
+
 
 
 @rate_limit(limit=3)

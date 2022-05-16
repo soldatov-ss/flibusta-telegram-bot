@@ -2,10 +2,11 @@ import hashlib
 
 from aiogram import types
 from aiogram.dispatcher.storage import FSMContextProxy
+from aiogram.utils.deep_linking import decode_payload
 
+from loader import db
+from utils.parsing.general import get
 from .check_args import check_args
-from utils.parsing.general import get_without_register, get
-from .pages.strings import no_result_message
 
 
 async def get_message_text(message: types.Message | FSMContextProxy, method: str):
@@ -22,32 +23,6 @@ async def get_message_text(message: types.Message | FSMContextProxy, method: str
         current_res = message.text
 
     return current_res
-
-
-async def create_list_choices(message: types.Message):
-    '''
-    Возвращает список вариантов для инлайн клавиатуры в main_handler
-    '''
-    url = f'http://flibusta.is//booksearch?ask={message.text}&chs=on&cha=on&chb=on'
-    if message.chat.id == 415348636:
-        soup = await get_without_register(url)
-    else:
-        soup = await get(url)
-
-    result = []
-    for i in soup.find_all('h3'):
-        if not i.text.split()[1] in ('серии', 'писатели', 'книги'):
-            continue
-        if i.text.split()[1] == 'серии':
-            result.append('Книжные серии')
-        else:
-            result.append(i.text.split()[1].title())
-    if not result:
-        empty_message = no_result_message(method='book')
-        await message.answer(empty_message)
-        return
-
-    return result
 
 
 def check_link(link: str):
@@ -72,3 +47,54 @@ def create_current_name(chat_type: str, name: str, flag=False):
     else:
         current_item_hash = current_item
     return current_item_hash
+
+
+
+async def check_link_for_channel(link: str, message: types.Message):
+    '''
+    Проверка ссылки для публикации в канале
+    '''
+    url = f'http://flibusta.is{link}'
+    link = message.text.replace("_", '/')
+
+    if link.startswith('/a') or link.startswith('/series'):
+        await message.answer('‼ Ссылка должна быть на конкретную КНИГУ\n '
+                             '(не на автора и не на книжную серию)')
+        return
+
+    data = await db.select_book(link=link)
+
+    if data and data.get('description'):
+        return True
+    else:
+        try:
+            await get(url)
+        except:
+            await message.answer('‼ Такой ссылки у меня в базе нет\n'
+                                 'Убедись что ссылка в формате /b_00000')
+            return
+
+    return True
+
+
+def check_link_from(message: types.Message):
+    '''
+    Проверяем, поступила ли ссылка с канала или с хендлера
+    :return: /b/12344
+    '''
+    if message.text.startswith('/start'):
+        book_link = decode_payload(''.join(message.text.split()[1:]))
+        link = check_link(book_link)  # обрезаем лишнее в ссылке
+    else:
+        link = check_link(message.text)
+    return link
+
+
+
+def replace_symbols(value):
+    '''
+    Убираем лишнее, чтобы добавить в БД
+    :param value: <tex't>
+    :return: text
+    '''
+    return value.replace("'", '"').replace(">", ')').replace('<', '(')

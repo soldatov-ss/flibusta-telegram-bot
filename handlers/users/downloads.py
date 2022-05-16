@@ -59,6 +59,7 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
 
     await db.update_count_downloaded(link=link)  # кол-во скачиваний
     await db.update_user_downloads(user_id=call.from_user.id) # кол-во загрузок у юзера
+    await message.delete()
 
 
 async def get_file(message: types.Message, format_file: str, url: str, book: str):
