@@ -37,6 +37,8 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
             await call.answer()
         except BadRequest:
             pass
+        except TimeoutError:
+            print('here')
     else:
         file = await get_file(message, callback_data['format_file'], url, book)
         if not file: return
@@ -69,7 +71,7 @@ async def get_file(message: types.Message, format_file: str, url: str, book: str
     response = await get_tempfile(url)
     try:
         res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
-        response.close()
+
         file = InputFile(path_or_bytesio=res_to_bytesio, filename=f'{book}.{format_file}')
 
     except AttributeError:
@@ -77,4 +79,7 @@ async def get_file(message: types.Message, format_file: str, url: str, book: str
         await message.edit_text('Упс! Возникли небольшие неполадки на сервере 😲\n'
                                        'Попробуй скачать книгу в другом формате 🙌\n')
         return
+    finally:
+        response.close()
+
     return file

@@ -2,6 +2,8 @@ import re
 
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from aiogram.utils.exceptions import MessageNotModified
+
 from utils.utils import check_link, create_current_name
 
 from keyboards.inline.big_keyboard import big_pagination, get_big_keyboard
@@ -92,7 +94,9 @@ async def characters_page_callback(call: types.CallbackQuery, callback_data: dic
     current_page = int(callback_data['page'])
     current_page_text = get_page(
         items_list=series_pages, page=current_page, series_lst=series_info)
-
-    await call.message.edit_text(text=current_page_text, reply_markup=get_big_keyboard(
+    try:
+        await call.message.edit_text(text=current_page_text, reply_markup=get_big_keyboard(
         count_pages=len(series_pages), key=current_series_name, page=current_page, method='series_books'))
+    except MessageNotModified:
+        pass
     await call.answer()

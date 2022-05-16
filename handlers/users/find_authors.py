@@ -1,6 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.storage import FSMContextProxy
+from aiogram.utils.exceptions import MessageNotModified
 
 from keyboards.inline.big_keyboard import get_big_keyboard, big_pagination
 from keyboards.inline.other_keyboards import languages_call
@@ -99,5 +100,8 @@ async def show_chosen(call: types.CallbackQuery, callback_data: dict):
 
     markup = get_big_keyboard(count_pages=len(author_books_lst), key=current_author_link,
                               page=current_page, method='author_books')
-    await call.message.edit_text(text=current_page_text, reply_markup=markup)
+    try:
+        await call.message.edit_text(text=current_page_text, reply_markup=markup)
+    except MessageNotModified:
+        pass
     await call.answer()

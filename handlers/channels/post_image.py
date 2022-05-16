@@ -29,6 +29,7 @@ async def get_post_image(message: types.Message, state: FSMContext):
         await message.answer(f'Изображение должно быть не в виде документа!\n'
                              f'Убедись что установлена соответствующая галочка {url}', reply_markup=quit_keyboard)
     else:
-        await message.answer('Пожалуйста, пришли изображение книги', reply_markup=quit_keyboard)
+        await message.answer('Пожалуйста, пришли изображение книги\n'
+                             'Изображение должно быть в формате JPEG, JPG или PNG', reply_markup=quit_keyboard)
 
     await Post.Image.set()

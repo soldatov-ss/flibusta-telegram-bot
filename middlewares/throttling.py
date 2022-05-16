@@ -6,7 +6,7 @@ from aiogram.dispatcher import DEFAULT_RATE_LIMIT
 from aiogram.dispatcher.handler import CancelHandler, current_handler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.utils import exceptions
-from aiogram.utils.exceptions import Throttled
+from aiogram.utils.exceptions import Throttled, MessageToDeleteNotFound
 
 
 class ThrottlingMiddleware(BaseMiddleware):
@@ -69,7 +69,10 @@ class ThrottlingMiddleware(BaseMiddleware):
             service_message = await message.reply(text)
 
             await asyncio.sleep(5)
-            await service_message.delete()
+            try:
+                await service_message.delete()
+            except MessageToDeleteNotFound:
+                pass
         try:
             await message.delete()
         except Exception as err:

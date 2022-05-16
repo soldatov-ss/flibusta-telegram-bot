@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageNotModified
 
 from keyboards.inline.small_keyboard import get_small_keyboard, pagination_call
 from loader import dp, db
@@ -45,5 +46,8 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     current_page_text = get_page(items_list=books_lst, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(books_lst), key=current_book, page=current_page, method='book')
-    await call.message.edit_text(current_page_text, reply_markup=markup)
+    try:
+        await call.message.edit_text(current_page_text, reply_markup=markup)
+    except MessageNotModified:
+        pass
     await call.answer()

@@ -51,6 +51,7 @@ class Database:
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
+        user = user.replace("'", '"')
         sql = f"INSERT INTO users(full_name, telegram_id, amount) VALUES ('{user}', {telegram_id}, 0) ON CONFLICT  DO NOTHING"
         await self.execute(sql, execute=True)
 
@@ -130,7 +131,10 @@ class Database:
             JOIN books USING(book_id) 
             WHERE link = '{link}'
         '''
-        return await self.execute(sql, fetchval=True)
+        res = await self.execute(sql, fetchval=True)
+        if res != 'None' or not res:
+            return res
+        return
 
     async def insert_file_id(self, link, format, file_id):
         # Обновляем file_id к соответствующему формату
@@ -140,7 +144,8 @@ class Database:
             ON CONFLICT (book_id) DO UPDATE
             SET {format} = '{file_id}'
         '''
-        return await self.execute(sql, fetchval=True)
+        if file_id:
+            return await self.execute(sql, fetchval=True)
 
 
     async def select_book(self, link):
