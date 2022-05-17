@@ -35,6 +35,7 @@ def admin_menu(post_id: int, user_id: int):
         [
         InlineKeyboardButton(text='Опубликовать', callback_data=admin_keyboard.new('post', post_id, user_id)),
         InlineKeyboardButton(text='Отклонить', callback_data=admin_keyboard.new('reject', post_id, user_id)),
+        InlineKeyboardButton(text='Редактировать', callback_data=admin_keyboard.new('edit', post_id, user_id)),
         ]
     ], row_width=2)
 

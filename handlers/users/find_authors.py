@@ -80,7 +80,10 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
     current_page_text = get_page(items_list=authors_lst, page=current_page)
 
     markup = get_small_keyboard(count_pages=len(authors_lst), key=current_author, page=current_page, method='author')
-    await call.message.edit_text(text=current_page_text, reply_markup=markup)
+    try:
+        await call.message.edit_text(text=current_page_text, reply_markup=markup)
+    except MessageNotModified:
+        pass
     await call.answer()
 
 

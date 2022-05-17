@@ -41,7 +41,7 @@ def user_menu(post_id: int, user_id: int):
 
 
 def go_to_channel(post_id: int):
-    url = f'https://t.me/book_for_every_day/{post_id}'
+    url = f'https://t.me/books_bar/{post_id}'
 
     markup = InlineKeyboardMarkup()
     btn = InlineKeyboardButton(text='Перейти к публикации', callback_data='go_to_channel', url=url)

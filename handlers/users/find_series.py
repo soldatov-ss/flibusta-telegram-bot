@@ -77,8 +77,10 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 
     markup = get_small_keyboard(
         count_pages=len(series_books_pages), key=current_series_name, page=current_page, method='series')
-
-    await call.message.edit_text(current_page_text, reply_markup=markup)
+    try:
+        await call.message.edit_text(current_page_text, reply_markup=markup)
+    except MessageNotModified:
+        pass
     await call.answer()
 
 

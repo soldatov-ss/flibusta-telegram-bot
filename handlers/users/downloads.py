@@ -61,6 +61,7 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
 
     await db.update_count_downloaded(link=link)  # кол-во скачиваний
     await db.update_user_downloads(user_id=call.from_user.id) # кол-во загрузок у юзера
+    await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
     await message.delete()
 
 
@@ -80,6 +81,6 @@ async def get_file(message: types.Message, format_file: str, url: str, book: str
                                        'Попробуй скачать книгу в другом формате 🙌\n')
         return
     finally:
-        response.close()
+        if response: response.close()
 
     return file

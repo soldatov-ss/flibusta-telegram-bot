@@ -5,7 +5,7 @@ from aiogram.utils.deep_linking import get_start_link
 from config import ADMIN_ID, channels
 from handlers.channels.strings import text_channel
 from keyboards.inline.admin import admin_menu, admin_keyboard
-from keyboards.inline.channel_keyboards import post_keyboard, download_keyboard, go_to_channel
+from keyboards.inline.channel_keyboards import post_keyboard, download_keyboard, go_to_channel, edit_menu
 from loader import dp, db
 
 
@@ -48,9 +48,17 @@ async def reject_post(call: types.CallbackQuery, callback_data: dict):
     await db.delete_post(post_id=callback_data['post_id'])
     await dp.bot.send_message(chat_id=callback_data['user_id'],
                               text='К сожалению, Ваша публикация была отклонена 🙄\nПопробуйте еще раз')
-
+    await call.answer()
 
 
 @dp.callback_query_handler(text='go_to_channel')
 async def go_post(call: types.CallbackQuery):
     await call.answer()
+
+
+
+@dp.callback_query_handler(admin_keyboard.filter(action='edit'))
+async def edit_post_by_admin(call: types.CallbackQuery, callback_data: dict):
+
+    post_id = callback_data['post_id']
+    await call.message.edit_reply_markup(reply_markup=edit_menu(post_id=post_id))
