@@ -101,10 +101,14 @@ def no_result_message(method: str):
 def message_into_bot(method: str):
     text = ''
     if method == 'series':
-        text = f'Больше книжных серий доступно в группе -- @free_book_flibusta 📚'
+        text = f'Больше книжных серий доступно в группе -- @free_book_flibusta 📚\n' \
+               f'Книжный бар: @books_bar 📚'
     elif method == 'author':
-        text = f'Больше авторов доступно в группе -- @free_book_flibusta 📚'
+        text = f'Больше авторов доступно в группе -- @free_book_flibusta 📚\n' \
+               f'Книжный бар: @books_bar 📚'
+
     elif method == 'book':
-        text = f'Больше книг доступно в группе -- @free_book_flibusta 📚'
+        text = f'Больше книг доступно в группе -- @free_book_flibusta 📚\n' \
+               f'Книжный бар: @books_bar 📚'
 
     return text

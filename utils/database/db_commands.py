@@ -94,8 +94,11 @@ class Database:
 
     async def select_count_values(self, table_name):
         # Выводит кол-во скачанных книг, либо кол-во юзеров
-        count = await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
-        return count
+        if table_name == 'books':
+            data = await self.execute(f'SELECT count(*), sum(downloaded) FROM {table_name}', fetchrow=True)
+            return data.get('count'), data.get('sum')
+        else:
+            return await self.execute(f'SELECT count(*) FROM {table_name}', fetchval=True)
 
     async def rating_top_10_values(self, table):
         # Возвращаем топ 10 книг или авторов по запросам и скачиваниям

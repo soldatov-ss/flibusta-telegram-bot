@@ -14,8 +14,9 @@ from utils.throttlig import rate_limit
 @dp.message_handler(Command('rating_book'))
 async def rating(message: types.Message):
 
-    count = await db.select_count_values('books')
-    return await message.answer(text=f'Всего было скачано книг: {count}')
+    count, sum_count = await db.select_count_values('books')
+    return await message.answer(text=f'Всего было скачано книг: {sum_count}\n'
+                                     f'Кол-во уникальных книг: {count}')
 
 
 @rate_limit(limit=3)
