@@ -16,7 +16,7 @@ async def current_page_error(call: types.CallbackQuery):
 def get_small_keyboard(count_pages: int, key, method, page: int = 1):
     previous_page = page - 1
     previous_page_text = 'Назад'
-    current_page_text = f'{page}'
+    current_page_text = f'{page}/{count_pages}'
     next_page = page + 1
     next_page_text = 'Вперед'
 

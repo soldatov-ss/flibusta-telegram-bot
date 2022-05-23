@@ -1,7 +1,7 @@
 import re
 
 from aiogram import types
-from aiogram.utils.exceptions import CantRestrictSelf
+from aiogram.utils.exceptions import CantRestrictSelf, CantRestrictChatOwner
 
 from loader import dp
 from utils.throttlig import rate_limit
@@ -30,5 +30,7 @@ async def check_new_user(message: types.Message):
         try:
             await dp.bot.kick_chat_member(message.chat.id, new_user.id)             # Кик на бота
         except CantRestrictSelf:
+            pass
+        except CantRestrictChatOwner:
             pass
         await dp.bot.kick_chat_member(message.chat.id, message.from_user.id)    # Кик на юзера который привел бота

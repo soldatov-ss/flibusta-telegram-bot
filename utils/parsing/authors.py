@@ -44,8 +44,10 @@ def languages(soup):
         except IndexError:                  # Ловим ошибку, на тот случай если будет не стандарный язык без аббревиатуры
             pass
         if len(variables_lang) <= 3:
-            only_three_lang.append(lang)
-            abbr_lang.append(abbr)
+            # Ловим ошибку на кривой перевод /a/8621
+            if (lang == 'Русский' and abbr == 'ru') or (lang != 'Русский'):
+                only_three_lang.append(lang)
+                abbr_lang.append(abbr)
 
         elif abbr in ['ru', 'uk', 'en'] and len(variables_lang) > 3:
             only_three_lang.append(lang)
