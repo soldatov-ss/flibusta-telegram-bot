@@ -27,14 +27,6 @@ async def rating(message: types.Message):
     return await message.answer(text=f'Всего в базе пользователей: {count}')
 
 
-@dp.message_handler(Command('delete'))
-async def delete_table(message: types.Message):
-    args = message.get_args()
-    if args == 'tables' and message.from_user.id == ADMIN_ID:
-        await db.delete_table_pages()
-        await db.create_tables()
-    return await message.answer('Таблицы были удалены!')
-
 
 @dp.message_handler(Command('log_file'))
 async def send_log_file(message: types.Message):

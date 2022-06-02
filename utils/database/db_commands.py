@@ -45,15 +45,16 @@ class Database:
 
 
 
-###################################################################################
+    ###################################################################################
     # Юзеры
-###################################################################################
+    ###################################################################################
 
     async def add_user(self, user: str, telegram_id: int):
         # Добавляет каждого нового пользователя в базу
         user = user.replace("'", '"')
         sql = f"INSERT INTO users(full_name, telegram_id, amount) VALUES ('{user}', {telegram_id}, 0) ON CONFLICT  DO NOTHING"
         await self.execute(sql, execute=True)
+
 
 
     async def update_user_downloads(self, user_id: int):
@@ -65,7 +66,6 @@ class Database:
                 '''
         await self.execute(sql, execute=True)
 
-
     async def top_users(self):
         # Возвращает список с топ 10 юзеров по скачиваниям
         sql = 'SELECT * FROM users ORDER BY amount DESC LIMIT 10'
@@ -74,19 +74,29 @@ class Database:
 ###################################################################################
 # Рейтинг
 ###################################################################################
-    async def rating_author(self, author: str, link: str):
-        # Добавляет автора в рейтинг, если уже есть в табл - обновляет счетчик скачанных книг
-        sql = f'''INSERT INTO authors(author_name, link, queries) VALUES ('{author}', '{link}', 1)
-                    ON CONFLICT (link) DO UPDATE 
-                    SET queries = 1 + (SELECT queries from authors where link = '{link}')'''
+    async def create_or_update_author(self, author: str, link: str, chat_type: str , languages: str, languages_abbr: str):
+        '''
+        Добавляет автора и обновляет рейтинг и язык на котором доступны книги
+        В группе доступно больше языковых вариантов нежели в боте
+        '''
+        chat_type = 'private_langs' if chat_type == 'private' else 'group_langs'
+        sql = f'''
+                    INSERT INTO authors(author_name, link, queries, {chat_type}_abbr, {chat_type})
+                     VALUES ('{author}', '{link}', 1, '{languages_abbr}', '{languages}')
+                     ON CONFLICT (link) DO UPDATE
+                     SET queries = 1 + (SELECT queries from authors where link = '{link}'),
+                     {chat_type}_abbr = '{languages_abbr}',
+                     {chat_type} = '{languages}'
+                      '''
         await self.execute(sql, execute=True)
 
 
-    async def update_count_downloaded(self, link: str):
-        # Обновляем рейтинг выбранной книги
+
+    async def update_count(self, table: str, column: str, link: str):
+        # Обновляем рейтинг
         sql = f'''
-            UPDATE books SET
-             downloaded = 1 + downloaded
+            UPDATE {table} SET
+             {column} = 1 + {column}
             WHERE link = '{link}'
         '''
         await self.execute(sql, execute=True)
@@ -112,9 +122,9 @@ class Database:
 
         return top_dict
 
-###################################################################################
+    ###################################################################################
     # Общие функции
-###################################################################################
+    ###################################################################################
     async def insert_book(self, book: str, link: str, author: str, formats: str, description: str):
         sql = f'''
             INSERT INTO books(book_name, link, downloaded, author, formats, description)  
@@ -158,16 +168,32 @@ class Database:
         res = await self.execute(sql, fetchrow=True)
         return res if res else None
 
-    async def delete_table_pages(self):
-        await self.execute(f'DROP TABLE book_pages, author_book_pages, series_pages', execute=True)
+
+
+    async def get_author_language(self, link: str, chat_type: str):
+        # return: Английский:Русский:Украинский, en:ru:uk, author name
+        chat_type = 'private_langs' if chat_type == 'private' else 'group_langs'
+        sql = f"SELECT {chat_type}_abbr, {chat_type}, authors FROM authors WHERE link='{link}' and {chat_type} is not Null"
+        data = await self.execute(sql, fetchrow=True)
+        if data:
+            return data.get(f'{chat_type}_abbr'), data.get(chat_type), data.get('author')
+
+
+    async def update_author_language(self, link: str, chat_type: str, languages: str, languages_abbr: str):
+
+        chat_type = 'private_langs' if chat_type == 'private' else 'group_langs'
+        sql = f"UPDATE authors " \
+              f"SET {chat_type}_abbr='{languages_abbr}'," \
+              f"{chat_type}='{languages}'" \
+              f"WHERE link='{link}'"
+        await self.execute(sql, execute=True)
 
 
 
 
-
-###################################################################################
-# Channels
-###################################################################################
+    ###################################################################################
+    # Channels
+    ###################################################################################
     async def create_post(self, values):
         # Создаем пост для публикации в канале
         sql = '''
@@ -210,9 +236,9 @@ class Database:
         sql = f'DELETE FROM channel_post WHERE post_id = {post_id}'
         await self.execute(sql, execute=True)
 
-###################################################################################
+    ###################################################################################
     # Массивы
-###################################################################################
+    ###################################################################################
     async def add_new_pages(self, table_name, items, request_name):
         sql = f"""
         INSERT INTO {table_name}(request_name, pages) 
@@ -233,6 +259,7 @@ class Database:
                     ON CONFLICT  DO NOTHING"""
         await self.execute(sql, execute=True)
 
+
     async def select_pages(self, request_name, table_name, *args):
         if args:
             sql = f"SELECT request_name, {', '.join(args)} FROM {table_name} WHERE request_name = '{request_name}'"
@@ -244,6 +271,7 @@ class Database:
 
         return self.get_args(res[0], table_name)
 
+
     async def update_author_pages(self, pages: list, request_name: str, count_books: int):
         sql = f"""
                 UPDATE author_book_pages SET pages = ARRAY[{pages}],
@@ -254,6 +282,7 @@ class Database:
     async def update_book_pages(self, request_name, pages, table_name, column='pages'):
         sql = f"UPDATE {table_name} SET {column} = ARRAY[{pages}] WHERE request_name='{request_name}'"
         await self.execute(sql, execute=True)
+
 
     @staticmethod
     def get_args(result, table_name):

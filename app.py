@@ -6,6 +6,7 @@ from config import ADMIN_ID, GROUP_ID
 from integrations.telegraph import FileUploader, TelegraphService
 from loader import dp, db, bot
 from middlewares import IntegrationMiddleware
+from utils.parsing.general import Session
 
 
 async def on_shutdown(dp: Dispatcher):
@@ -31,6 +32,9 @@ async def main(dispatcher):
     await set_admin_commands(dp, chat_id=ADMIN_ID)
     await set_group_commands(dp, GROUP_ID)
 
+    session = Session()
+    await session.get_session()
+    bot["session"] = session
     try:
         await dp.start_polling()
     finally:
@@ -38,7 +42,7 @@ async def main(dispatcher):
         await dp.storage.wait_closed()
         await bot.session.close()
         await on_shutdown(dp)
-
+        bot.get("session").close()
 
 if __name__ == '__main__':
     try:

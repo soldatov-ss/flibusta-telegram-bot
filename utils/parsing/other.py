@@ -1,8 +1,9 @@
 from aiogram import types
 
+
 from utils.pages.strings import no_result_message
 from utils.parsing.books import parsing_formats, description
-from utils.parsing.general import get, check_chat_type
+
 
 
 async def get_book_description(link):
@@ -11,7 +12,7 @@ async def get_book_description(link):
     :param link: str
     :return: list with description about book
     '''
-    from loader import db
+    from loader import db, bot
 
     url = f'http://flibusta.is{link}'
     data = await db.select_book(link=link)
@@ -23,7 +24,7 @@ async def get_book_description(link):
         book = data.get('book_name')
         formats_list = data.get('formats').split(':')
     else:
-        soup = await get(url)
+        soup = await bot.get('session').get_soup(url)
         formats_list = parsing_formats(soup)
 
         descr, author, book = description(soup)
@@ -41,7 +42,8 @@ async def create_list_choices(message: types.Message):
     :return list of buttons
     '''
     url = f'http://flibusta.is//booksearch?ask={message.text}&chs=on&cha=on&chb=on'
-    soup = await check_chat_type(message.chat, url)
+    from loader import bot
+    soup = await bot.get('session').get_soup(url, chat=message.chat)
 
     result = []
     for i in soup.find_all('h3'):

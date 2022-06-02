@@ -1,6 +1,6 @@
 import numpy as np
 
-from utils.parsing.general import get, get_without_register
+
 
 
 def find_pagination(soup):
@@ -31,13 +31,15 @@ def search_series(soup):
 
 async def series_books(soup, link):
     # Ищем все книги в выбранной серии
+    from loader import bot
+
     pagination_lst = find_pagination(soup)
     series_dict = {}
     if pagination_lst is not None:
         # Если есть пагинация - добавляем все книги со всех страниц
         for page in pagination_lst:
             url = f'http://flibusta.is{link}?page={page}'
-            soup = await get(url)
+            soup = await bot.get('session').get_soup(url)
             res = soup.find('div', id='main').find_all('form', action='/mass/download')
             for items in res:
                 for item in items.find_all('a'):

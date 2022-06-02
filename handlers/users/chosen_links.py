@@ -2,10 +2,11 @@ import re
 
 from aiogram import types
 
+from handlers.users.find_authors import current_languages
 from keyboards.inline.other_keyboards import get_language, get_formats
+from loader import bot
 from loader import dp, db
 from utils.parsing.authors import languages
-from utils.parsing.general import check_chat_type
 from utils.parsing.other import get_book_description
 from utils.throttlig import rate_limit
 from utils.utils import check_link, check_link_from
@@ -18,15 +19,28 @@ async def chosen_link_author(message: types.Message):
     link = check_link(message.text)
     url = f'http://flibusta.is{link}&lang='
 
-    soup = await check_chat_type(message.chat, url)
-    abbr_lst, languages_lst, author = languages(soup)
+    data = await db.get_author_language(link, message.chat.type)
 
-    text = f'Книги доступны на следующих языках: \n' \
-           f'Ты можешь выбрать удобный для тебя язык 👇'
+    if data:
+        languages_lst, lang_abbr, author = data
+        lang_abbr = lang_abbr.split(':')
+        languages_lst = languages_lst.split(':')
+        await db.update_count(table='authors', column='queries', link=link)
 
-    await message.answer(text, reply_markup=get_language(
-        languages_lst=languages_lst, link=link, abbr_lst=abbr_lst))
-    await db.rating_author(author=author, link=link)  # Добавляем автора в базу для рейтинга
+    else:
+        soup = await bot.get('session').get_soup(url, chat=message.chat)
+        lang_abbr, languages_lst, author = languages(soup)
+        await db.create_or_update_author(author, link, message.chat.type, ':'.join(lang_abbr), ':'.join(languages_lst))
+
+    if len(lang_abbr) == 1:
+        await current_languages(message, {"abbr": lang_abbr[0], 'link': link})
+    else:
+
+        text = f'Книги доступны на следующих языках: \n' \
+               f'Ты можешь выбрать удобный для тебя язык 👇'
+
+        await message.answer(text, reply_markup=get_language(
+            languages_lst=languages_lst, link=link, abbr_lst=lang_abbr))
 
 
 

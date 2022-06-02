@@ -20,7 +20,8 @@ class IsBot(BoundFilter):
     '''
     async def check(self, message: types.Message):
         isBot = message.from_user.is_bot
-        if isBot and message.from_user.username != 'GroupAnonymousBot':
+        telegram_bots = ['Channel_Bot', 'GroupAnonymousBot']
+        if isBot and message.from_user.username not in telegram_bots:
             await bot.kick_chat_member(message.chat.id, message.from_user.id)
             await message.answer(f'Пользователь {message.from_user.get_mention()} был кикнут!\n'
                                  f'Причина: в группе могут находится только люди 🤖')

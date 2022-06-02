@@ -41,28 +41,28 @@ async def author_command(message: types.Message | FSMContextProxy):
 
 @rate_limit(limit=3)
 @dp.callback_query_handler(languages_call.filter())
-async def current_languages(call: types.CallbackQuery, callback_data: dict):
-    # Вывод списока доступных книг по выбранному языку
-
+async def current_languages(msg: types.CallbackQuery|types.Message, callback_data: dict):
+    # Вывод списка доступных книг по выбранному языку
+    message = msg if isinstance(msg, types.Message) else msg.message
     language = callback_data['abbr']
     link = callback_data['link']
 
     url = f'http://flibusta.is{link}&lang={language}&order=p&hg1=1&hg=1&sa1=1&hr1=1'
 
-    current_author_link = create_current_name(call.message.chat.type, link + language, flag=True)
-    book_pages = await get_author_pages(current_author_link, call.message.chat, url)
+    current_author_link = create_current_name(message.chat.type, link + language, flag=True)
+    book_pages = await get_author_pages(current_author_link, message.chat, url)
 
     if book_pages:
         book_pages, author_name, count_books, data_from_db = book_pages
 
         current_page = get_page(book_pages, author=[author_name, count_books])
-        await call.message.answer(current_page,
+        await message.answer(current_page,
                                   reply_markup=get_big_keyboard(count_pages=len(book_pages),
                                                                 key=current_author_link, method='author_books'))
-        await call.answer()
+        await msg.answer() if isinstance(msg, types.CallbackQuery) else None
 
         if data_from_db: # Обновляем в БД данные по доступным книгам
-            updated_list_pages, count_books, _ = await get_from_request_author_pages(call.message.chat, url=url)
+            updated_list_pages, count_books, _ = await get_from_request_author_pages(message.chat, url=url)
             await db.update_author_pages(updated_list_pages, current_author_link, count_books)
 
 

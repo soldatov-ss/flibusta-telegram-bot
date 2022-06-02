@@ -6,8 +6,8 @@ from aiogram.utils.exceptions import NetworkError, InvalidQueryID, BadRequest
 
 from handlers.users.chosen_links import get_book_description
 from keyboards.inline.other_keyboards import files_call
-from loader import dp, db
-from utils.parsing.general import get_tempfile
+from loader import dp, db, bot
+
 from utils.throttlig import rate_limit
 
 
@@ -38,7 +38,7 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
         except BadRequest:
             pass
         except TimeoutError:
-            print('here')
+            pass
     else:
         file = await get_file(message, callback_data['format_file'], url, book)
         if not file: return
@@ -55,21 +55,21 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
         except InvalidQueryID:  # Ловим ошибку на длительную скачивание/отправку
             pass
 
-
-
         await db.insert_file_id(link=link, format=format_file, file_id=file_id)
 
-    await db.update_count_downloaded(link=link)  # кол-во скачиваний
+    await db.update_count(table='books', column='downloaded', link=link)  # кол-во скачиваний
     await db.update_user_downloads(user_id=call.from_user.id) # кол-во загрузок у юзера
     await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
     await message.delete()
+
 
 
 async def get_file(message: types.Message, format_file: str, url: str, book: str):
     '''
     Получаем временный файл и конвертируем в байты для отправки
     '''
-    response = await get_tempfile(url)
+    response = await bot.get('session').get_tempfile(url)
+
     try:
         res_to_bytesio = BytesIO(response.read())  # конвентируем книгу в байты для отправки
 

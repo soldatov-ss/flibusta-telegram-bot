@@ -4,8 +4,8 @@ from aiogram import types
 from aiogram.dispatcher.storage import FSMContextProxy
 from aiogram.utils.deep_linking import decode_payload
 
-from loader import db
-from utils.parsing.general import get
+from loader import db, bot
+
 from .check_args import check_args
 
 
@@ -68,7 +68,7 @@ async def check_link_for_channel(link: str, message: types.Message):
         return True
     else:
         try:
-            await get(url)
+            await bot.get('session').get_soup(url)
         except:
             await message.answer('‼ Такой ссылки у меня в базе нет\n'
                                  'Убедись что ссылка в формате /b_00000')
