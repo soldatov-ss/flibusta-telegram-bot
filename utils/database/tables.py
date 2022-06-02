@@ -25,7 +25,11 @@ def create_tables_rows():
     author_id SERIAL PRIMARY KEY,
     author_name VARCHAR(255) NOT NULL,
     link VARCHAR(255) NOT NULL UNIQUE,
-    queries BIGINT NOT NULL
+    queries BIGINT NOT NULL,
+    private_langs_abbr VARCHAR(255),
+    group_langs_abbr VARCHAR(255),
+    group_langs VARCHAR(255),
+    private_langs VARCHAR(255)
     )
     '''
     # Таблица для хранения страниц с результатами запросов и названиями запросов
