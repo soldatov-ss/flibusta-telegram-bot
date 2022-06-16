@@ -6,7 +6,8 @@ class Post(StatesGroup):
     Book = State()
     Author = State()
     Description = State()
-    Link = State()
+    RuLink = State()
+    UaLink = State()
 
 class UpgradePost(StatesGroup):
     Post = State()

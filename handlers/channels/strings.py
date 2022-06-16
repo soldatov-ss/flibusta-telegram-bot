@@ -12,5 +12,5 @@ def text_channel(data: dict, from_admin: bool = False):
            f'{url}'
 
     if not from_admin:
-        text += f'Ссылка {data.get("link")}'
+        text += f'RU Ссылка {data.get("ru_link")}\nUA Ссылка {data.get("ua_link")}'
     return text

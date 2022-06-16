@@ -97,7 +97,8 @@ def create_tables_rows():
     url VARCHAR(255) UNIQUE NOT NULL,
     book  VARCHAR(255),
     author VARCHAR(255),
-    link VARCHAR(255),
+    ru_link VARCHAR(255),
+    ua_link VARCHAR(255),
     description TEXT
     )
     '''

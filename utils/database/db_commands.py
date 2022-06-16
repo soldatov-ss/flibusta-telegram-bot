@@ -197,8 +197,9 @@ class Database:
     async def create_post(self, values):
         # Создаем пост для публикации в канале
         sql = '''
-        INSERT INTO channel_post(user_id, url, book, author, link, description) VALUES
-        ('{user_id}', '{url}', '{book}', '{author}', '{link}', '{description}') ON CONFLICT DO NOTHING
+        INSERT INTO channel_post(user_id, url, book, author, ru_link, ua_link,description) VALUES
+        ('{user_id}', '{url}', '{book}', '{author}', '{ru_link}', '{ua_link}', '{description}') 
+        ON CONFLICT DO NOTHING
         RETURNING post_id
         '''.format(**values)
         post_id = await self.execute(sql, fetchrow=True)

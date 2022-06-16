@@ -22,13 +22,13 @@ async def edit_post(message: types.Message, state: FSMContext):
             post = await db.update_post(column='author', value=message.text, post_id=post_id)
         elif data['action'] == 'description':
             post = await db.update_post(column='description', value=message.text, post_id=post_id)
-        elif data['action'] == 'link':
+        elif data['action'] == 'ua_link' or data['action'] == 'ru_link':
 
             link = await check_link_for_channel(message.text, message)
             if not link:
                 return await UpgradePost.Post.set()
 
-            post = await db.update_post(column='link', value=message.text, post_id=post_id)
+            post = await db.update_post(column=data['action'], value=message.text, post_id=post_id)
 
         text = text_channel(post)
         await message.answer(text, reply_markup=user_menu(post_id=post_id, user_id=message.from_user.id))
@@ -83,14 +83,14 @@ async def start_cmd_handler(call: types.CallbackQuery, state: FSMContext, callba
     await call.answer()
 
 
-@dp.callback_query_handler(edit_keyboard.filter(action='link'), state='*')
+@dp.callback_query_handler(edit_keyboard.filter(action='ua_link'), state='*')
+@dp.callback_query_handler(edit_keyboard.filter(action='ru_link'), state='*')
 async def start_cmd_handler(call: types.CallbackQuery, state: FSMContext, callback_data: dict):
 
     await call.message.answer('Ок. Пришли новую ссылку на книгу', reply_markup=return_to_edit_key)
-
     await UpgradePost.Post.set()
     async with state.proxy() as data:
-        data['action'] = 'link'
+        data['action'] = callback_data['action']
         data['post_id'] = callback_data['post_id']
     await call.answer()
 
