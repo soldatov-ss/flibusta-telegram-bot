@@ -1,3 +1,4 @@
+import binascii
 import hashlib
 
 from aiogram import types
@@ -17,7 +18,7 @@ async def get_message_text(message: types.Message | FSMContextProxy, method: str
         current_res = message.get_args()
         empty_message = check_args(current_res, method)
         if empty_message:
-            await message.answer(empty_message)
+            await message.reply(empty_message)
             return
     else:
         current_res = message.text
@@ -83,7 +84,10 @@ def check_link_from(message: types.Message):
     :return: /b/12344
     '''
     if message.text.startswith('/start'):
-        book_link = decode_payload(''.join(message.text.split()[1:]))
+        try:
+            book_link = decode_payload(''.join(message.text.split()[1:]))
+        except binascii.Error:
+            return
         link = check_link(book_link)  # обрезаем лишнее в ссылке
     else:
         link = check_link(message.text)

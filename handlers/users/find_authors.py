@@ -70,12 +70,8 @@ async def current_languages(msg: types.CallbackQuery|types.Message, callback_dat
 # Пагинация при показе всех доступных авторов
 @dp.callback_query_handler(pagination_call.filter(method='author'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
-    try:
-        # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_author, authors_lst = await db.select_pages(callback_data['key'], table_name='author_pages')
-    except TypeError:
-        return await call.answer(cache_time=60)
 
+    current_author, authors_lst = await db.select_pages(callback_data['key'], table_name='author_pages')
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=authors_lst, page=current_page)
 
@@ -90,12 +86,9 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 # Пагинация при показе всех доступных книг автора
 @dp.callback_query_handler(big_pagination.filter(method='author_books'))
 async def show_chosen(call: types.CallbackQuery, callback_data: dict):
-    try:
-        # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_author_link, author_books_lst, author_name, count_books = await db.select_pages(
+
+    current_author_link, author_books_lst, author_name, count_books = await db.select_pages(
             callback_data['key'], 'author_book_pages', 'author_name', 'pages', 'сount_books')
-    except TypeError:
-        return await call.answer(cache_time=60)
 
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(

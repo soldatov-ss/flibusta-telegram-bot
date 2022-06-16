@@ -50,6 +50,7 @@ async def chosen_link_book(message: types.Message):
     # Ловим линк и выводим доступные форматы для скачивания
 
     link = check_link_from(message)
+    if not link: return
     book, author, file_formats, descr = await get_book_description(link)
 
     text = f'Автор: <b>{author}</b>\n\n' \

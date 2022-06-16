@@ -30,7 +30,7 @@ async def download_book(call: types.CallbackQuery, callback_data: dict):
     book, author, *args = await get_book_description(link)
 
     file_id = await db.select_file_id(link=link, format=format_file)
-    message = await call.message.answer(f'Ожидайте, начинаю скачивать книгу 🙃')
+    message = await call.message.reply(f'Ожидайте, начинаю скачивать книгу 🙃')
     if file_id:
         try:
             await call.message.answer_document(file_id, caption=author)

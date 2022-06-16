@@ -27,7 +27,7 @@ async def series_command(message: types.Message):
 
     current_series_hash = create_current_name(message.chat.type, series_name.title())
     series_pages, data_from_db = await get_list_pages(current_series_hash, message.chat, url, method='series',
-                                              func=search_series)
+                                                      func=search_series)
     if series_pages:
         current_page = get_page(series_pages)
 
@@ -66,12 +66,7 @@ async def chosen_link_series(message: types.Message):
 # Пагинация
 @dp.callback_query_handler(pagination_call.filter(method='series'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
-    try:
-        # На случай если в базе не будет списка с авторами, чтобы пагинация просто отключалась
-        current_series_name, series_books_pages = await db.select_pages(callback_data['key'], table_name='series_pages')
-    except TypeError:
-        return await call.answer(cache_time=60)
-
+    current_series_name, series_books_pages = await db.select_pages(callback_data['key'], table_name='series_pages')
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=series_books_pages, page=current_page)
 
@@ -87,18 +82,15 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 # Пагинация при показе всех доступных книг выбранной серии
 @dp.callback_query_handler(big_pagination.filter())
 async def characters_page_callback(call: types.CallbackQuery, callback_data: dict):
-    try:
-        current_series_name, series_pages, series_info = await db.select_pages(
-            callback_data['key'], 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
-    except TypeError:
-        return await call.answer(cache_time=60)
+    current_series_name, series_pages, series_info = await db.select_pages(
+        callback_data['key'], 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
 
     current_page = int(callback_data['page'])
     current_page_text = get_page(
         items_list=series_pages, page=current_page, series_lst=series_info)
     try:
         await call.message.edit_text(text=current_page_text, reply_markup=get_big_keyboard(
-        count_pages=len(series_pages), key=current_series_name, page=current_page, method='series_books'))
+            count_pages=len(series_pages), key=current_series_name, page=current_page, method='series_books'))
     except MessageNotModified:
         pass
     await call.answer()

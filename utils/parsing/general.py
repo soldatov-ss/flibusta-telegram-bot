@@ -4,6 +4,7 @@ from typing import Optional
 import aiohttp
 import fake_useragent
 from aiogram import types
+from aiohttp import TCPConnector
 from bs4 import BeautifulSoup
 
 import config
@@ -12,8 +13,8 @@ import config
 class Session:
     register_url = 'http://flibusta.is/user'
     data = {
-        'name': config.CITE_LOGIN,
-        'pass': config.CITE_PASS,
+        'name': config.SITE_LOGIN,
+        'pass': config.SITE_PASS,
         'form_id': 'user_login'}
 
     def __init__(self):
@@ -24,7 +25,7 @@ class Session:
 
     async def get_session(self) -> aiohttp.ClientSession:
         if self._session is None:
-            new_session = aiohttp.ClientSession()
+            new_session = aiohttp.ClientSession(connector=TCPConnector(verify_ssl=False))
             self._session = new_session
         return self._session
 

@@ -36,12 +36,8 @@ async def find_books(message: types.Message):
 # Пагинация
 @dp.callback_query_handler(pagination_call.filter(method='book'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
-    try:
-        # На случай если в базе не будет списка с книгами, чтобы пагинация просто отключалась
-        current_book, books_lst = await db.select_pages(callback_data['key'], table_name='book_pages')
-    except TypeError:
-        return await call.answer(cache_time=60)
 
+    current_book, books_lst = await db.select_pages(callback_data['key'], table_name='book_pages')
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=books_lst, page=current_page)
 
