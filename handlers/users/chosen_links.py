@@ -29,7 +29,13 @@ async def chosen_link_author(message: types.Message):
 
     else:
         soup = await bot.get('session').get_soup(url, chat=message.chat)
-        lang_abbr, languages_lst, author = languages(soup)
+
+        try:
+            laguages_data = languages(soup)
+        except AttributeError:
+            return await message.reply('Упс. Либо ссылка больше не активна, либо ты добавил лишние символы')
+        lang_abbr, languages_lst, author = laguages_data
+
         await db.create_or_update_author(author, link, message.chat.type, ':'.join(lang_abbr), ':'.join(languages_lst))
 
     if len(lang_abbr) == 1:

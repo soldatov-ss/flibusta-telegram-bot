@@ -86,9 +86,11 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 # Пагинация при показе всех доступных книг автора
 @dp.callback_query_handler(big_pagination.filter(method='author_books'))
 async def show_chosen(call: types.CallbackQuery, callback_data: dict):
+    data_pages = await db.select_pages(callback_data['key'], 'author_book_pages', 'author_name', 'pages', 'сount_books')
+    if not data_pages:
+        return await call.answer()
 
-    current_author_link, author_books_lst, author_name, count_books = await db.select_pages(
-            callback_data['key'], 'author_book_pages', 'author_name', 'pages', 'сount_books')
+    current_author_link, author_books_lst, author_name, count_books = data_pages
 
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(

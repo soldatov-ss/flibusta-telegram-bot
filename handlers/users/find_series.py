@@ -66,7 +66,10 @@ async def chosen_link_series(message: types.Message):
 # Пагинация
 @dp.callback_query_handler(pagination_call.filter(method='series'))
 async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
-    current_series_name, series_books_pages = await db.select_pages(callback_data['key'], table_name='series_pages')
+    data_pages = await db.select_pages(callback_data['key'], table_name='series_pages')
+    if not data_pages:
+        return await call.answer()
+    current_series_name, series_books_pages = data_pages
     current_page = int(callback_data.get('page'))
     current_page_text = get_page(items_list=series_books_pages, page=current_page)
 
@@ -82,8 +85,11 @@ async def show_chosen_page(call: types.CallbackQuery, callback_data: dict):
 # Пагинация при показе всех доступных книг выбранной серии
 @dp.callback_query_handler(big_pagination.filter())
 async def characters_page_callback(call: types.CallbackQuery, callback_data: dict):
-    current_series_name, series_pages, series_info = await db.select_pages(
+    data_pages = await db.select_pages(
         callback_data['key'], 'series_book_pages', 'series_name', 'series_author', 'series_genres', 'pages')
+    if not data_pages:
+        return await call.answer()
+    current_series_name, series_pages, series_info = data_pages
 
     current_page = int(callback_data['page'])
     current_page_text = get_page(
