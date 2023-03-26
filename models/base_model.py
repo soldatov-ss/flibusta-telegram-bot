@@ -21,7 +21,7 @@ class Base(metaclass=DeclarativeMeta):
 class BaseModel(Base):
     __abstract__ = True
 
-    id: Mapped[Id] = Column(Id, primary_key=True, autoincrement=True)
+    id: Mapped[Id] = Column(Id, primary_key=True)
 
     def __repr__(self):
         if self.id:
