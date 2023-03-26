@@ -7,6 +7,9 @@ remove-volumes:
 docker-prune:
 	docker image prune && docker volume prune && docker container prune
 
+restart-api:
+	docker restart bot
+
 
 # Example: make migration_name=add_new_table alembic-migrate
 # Perhaps you need run the next command: pip install pymysql cryptography

@@ -1,8 +1,8 @@
 """initial_migrate
 
-Revision ID: 54ea952d4b28
+Revision ID: 6a4e5ccb2054
 Revises: 
-Create Date: 2023-03-19 13:02:31.059309
+Create Date: 2023-03-19 13:50:49.501842
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 from models.base_model import Id
 
 # revision identifiers, used by Alembic.
-revision = '54ea952d4b28'
+revision = '6a4e5ccb2054'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -24,8 +24,8 @@ def upgrade() -> None:
         sa.Column('full_name', sa.String(length=255), nullable=False),
         sa.Column('telegram_id', sa.BigInteger(), nullable=False),
         sa.Column('download_count', sa.BigInteger(), nullable=True),
-        sa.Column('id', Id(), nullable=False),
-        sa.PrimaryKeyConstraint('user_id', 'id'),
+        sa.Column('id', Id(), autoincrement=True, nullable=False),
+        sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('telegram_id')
     )
     # ### end Alembic commands ###
