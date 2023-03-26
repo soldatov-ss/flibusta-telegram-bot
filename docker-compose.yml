@@ -2,9 +2,6 @@ version: '3.8'
 
 services:
   db:
-    # ВНИМАТЕЛЬНО! ВОТ ЭТО НАЗВАНИЕ СЕРВИСА - db - ДОЛЖНО БЫТЬ УКАЗАНО В БОТЕ КАК host В ПОДКЛЮЧЕНИИ К БАЗЕ ИЗ БОТА
-    # ТО ЕСТЬ НЕ АЙПИШНИК И НЕ ЛОКАЛХОСТ, А db
-    # DB_HOST: db
     container_name: database
     image: mysql:8.0
     env_file:
@@ -21,7 +18,7 @@ services:
     container_name: bot
     build:
       context: .
-    command: python app.py
+    command:  bash -c "alembic upgrade head && python app.py run -h 0.0.0.0"
     networks:
       - botnet
     restart: always
