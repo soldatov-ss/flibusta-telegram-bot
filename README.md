@@ -1,6 +1,5 @@
-Async telegram bot
+Telegram bot for searching books in Flibusta
 -----
-Доступ к боту: <b>@my_flibusta_bot</b>
 _________
 Чем отличается от остальных? 
 ---
