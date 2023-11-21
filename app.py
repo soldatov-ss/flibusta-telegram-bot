@@ -26,11 +26,11 @@ async def main(dispatcher):
     dp.middleware.setup(IntegrationMiddleware(file_uploader))
     bot["file_uploader"] = file_uploader
 
-    await db.create()
-    await db.create_tables()
+    # await db.create()
+    # await db.create_tables()
     await set_default_commands(dp)
-    await set_admin_commands(dp, chat_id=ADMIN_ID)
-    await set_group_commands(dp, GROUP_ID)
+    # await set_admin_commands(dp, chat_id=ADMIN_ID)
+    # await set_group_commands(dp, GROUP_ID)
 
     session = Session()
     await session.get_session()

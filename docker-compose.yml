@@ -1,29 +1,24 @@
-version: '3.1'
+version: '3.8'
 
 services:
   db:
-    # ВНИМАТЕЛЬНО! ВОТ ЭТО НАЗВАНИЕ СЕРВИСА - db - ДОЛЖНО БЫТЬ УКАЗАНО В БОТЕ КАК host В ПОДКЛЮЧЕНИИ К БАЗЕ ИЗ БОТА
-    # ТО ЕСТЬ НЕ АЙПИШНИК И НЕ ЛОКАЛХОСТ, А db
-    # DB_HOST: db
     container_name: database
-    image: sameersbn/postgresql:10-2
+    image: mysql:8.0
     env_file:
        - ".env"
-    environment:
-      DB_PASS: $DB_PASS
     restart: always
     ports:
-      - 5432:5432
+      - 3306:3306
     networks:
       - botnet
     volumes:
-      - ./postgres:/var/lib/postgresql
+      - ./data:/var/lib/mysql
 
   tgbot:
     container_name: bot
     build:
       context: .
-    command: python app.py
+    command:  bash -c "alembic upgrade head && python app.py run -h 0.0.0.0"
     networks:
       - botnet
     restart: always
@@ -31,12 +26,9 @@ services:
       - ".env"
     volumes:
       - .:/src
-    # Бот стартует после запуска базы
     depends_on:
       - db
 
-# указываются используемые сети
 networks:
   botnet:
-    # указывается драйвер сети
     driver: bridge

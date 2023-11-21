@@ -11,10 +11,10 @@ SITE_LOGIN = env.str('SITE_LOGIN')
 
 
 # настройки входа в БД
-DB_USER = env.str('DB_USER')
-DB_PASS = env.str('DB_PASS')
-DB_HOST = env.str('DB_HOST')
-DB_NAME = env.str('DB_NAME')
+DB_USER = env.str('MYSQL_USER')
+DB_PASS = env.str('MYSQL_PASSWORD')
+# DB_HOST = env.str('DB_HOST')
+DB_NAME = env.str('MYSQL_ROOT_PASSWORD')
 
 ADMIN_ID = env.str('ADMINS')
 GROUP_ID = env.str('GROUP_ID')
