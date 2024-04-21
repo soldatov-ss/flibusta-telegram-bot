@@ -6,8 +6,20 @@ from config import ADMIN_ID, GROUP_ID
 from integrations.telegraph import FileUploader, TelegraphService
 from loader import dp, db, bot
 from middlewares import IntegrationMiddleware
+from middlewares.session import SQLAlchemySessionMiddleware
 from utils.parsing.general import Session
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+
+DATABASE_URL = 'mysql+mysqlconnector://mysql:password@172.20.0.2:3306/database'
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Add the SQLAlchemy session middleware
+dp.middleware.setup(SQLAlchemySessionMiddleware(SessionLocal))
 
 async def on_shutdown(dp: Dispatcher):
     file_uploader: FileUploader = dp.bot["file_uploader"]

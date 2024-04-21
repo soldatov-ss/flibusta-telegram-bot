@@ -1,8 +1,11 @@
+from select import select
+
 from aiogram import types
 from aiogram.dispatcher.filters import Command, CommandStart
 from aiogram.utils.exceptions import CantParseEntities
 
 from loader import dp, db
+from models import UserModel
 from utils.pages.rating import page_rating, page_top_users
 from utils.throttlig import rate_limit
 
@@ -44,7 +47,7 @@ async def command_help(message: types.Message):
 
 @rate_limit(limit=3)
 @dp.message_handler(CommandStart())
-async def command_start(message: types.Message):
+async def command_start(message: types.Message, session):
 
     from handlers.users.chosen_links import chosen_link_book
 
@@ -67,7 +70,8 @@ async def command_start(message: types.Message):
         await message.answer(text)
     except CantParseEntities:               # Ошибка, если у юзера никнейм не стандарный
         pass
-    await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
+    result = await session.execute(select(UserModel).filter(User.id == message.from_user.id))
+    # await db.add_user(user=message.from_user.full_name, telegram_id=message.from_user.id)
 
 
 

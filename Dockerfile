@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.11
 
 WORKDIR /src
 
@@ -6,10 +6,9 @@ WORKDIR /src
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# install system dependencies
-RUN apt-get update && apt-get install -y netcat
-
+RUN apt-get update
 RUN pip install --upgrade pip
+
 COPY requirements.txt /src
 RUN pip install -r requirements.txt
 
