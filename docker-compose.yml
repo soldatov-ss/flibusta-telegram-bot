@@ -13,7 +13,9 @@ services:
     restart: always
     env_file:
       - ".env"
-
+    depends_on:
+      - db
+      - api
     logging:
       driver: "json-file"
       options:

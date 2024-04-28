@@ -6,9 +6,11 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 
+from infrastructure.database.setup import create_engine, create_session_pool, session_pool
 from tgbot.config import load_config, Config
 from tgbot.handlers import routers_list
 from tgbot.middlewares.config import ConfigMiddleware
+from tgbot.middlewares.database import DatabaseMiddleware
 from tgbot.services import broadcaster
 
 
@@ -94,7 +96,8 @@ async def main():
 
     dp.include_routers(*routers_list)
 
-    register_global_middlewares(dp, config)
+    dp.update.outer_middleware(DatabaseMiddleware(session_pool))
+    register_global_middlewares(dp, config, session_pool)
 
     await on_startup(bot, config.tg_bot.admin_ids)
     await dp.start_polling(bot)

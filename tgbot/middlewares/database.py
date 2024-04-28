@@ -1,9 +1,12 @@
+import logging
 from typing import Callable, Dict, Any, Awaitable
 
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 
-from infrastructure.database.repo.requests import RequestsRepo
+from infrastructure.database.service import get_repository
+
+logger = logging.getLogger(__name__)
 
 
 class DatabaseMiddleware(BaseMiddleware):
@@ -11,22 +14,19 @@ class DatabaseMiddleware(BaseMiddleware):
         self.session_pool = session_pool
 
     async def __call__(
-        self,
-        handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
-        event: Message,
-        data: Dict[str, Any],
+            self,
+            handler: Callable[[Message, Dict[str, Any]], Awaitable[Any]],
+            event: Message,
+            data: Dict[str, Any],
     ) -> Any:
-        async with self.session_pool() as session:
-            repo = RequestsRepo(session)
-
+        async with get_repository() as repo:
             user = await repo.users.get_or_create_user(
-                event.from_user.id,
-                event.from_user.full_name,
-                event.from_user.language_code,
-                event.from_user.username
+                event.message.from_user.id,
+                event.message.from_user.full_name,
+                event.message.from_user.language_code,
+                event.message.from_user.username
             )
-
-            data["session"] = session
+            # data["session"] = session
             data["repo"] = repo
             data["user"] = user
 
