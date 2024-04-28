@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import TIMESTAMP
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import DeclarativeBase
