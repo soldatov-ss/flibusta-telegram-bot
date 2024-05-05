@@ -2,6 +2,7 @@ aiogram~=3.0
 environs~=9.0
 redis
 betterlogging
+aiogram-inline-paginations==0.1.12
 
 # # For enabling api:
 backoff

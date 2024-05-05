@@ -22,7 +22,7 @@ class BookRepo(BaseRepo):
 
         if not rows:
             return None
-        return rows
+        return rows[0]
 
     async def get_books_with_authors_by_title(self, title: str):
         query = (
@@ -36,7 +36,7 @@ class BookRepo(BaseRepo):
             .outerjoin(BookRateModel, BookModel.book_id == BookRateModel.book_id)
             .where(BookModel.title.ilike(f'%{title}%'))
             .group_by(BookModel.book_id, AuthorModel.author_id, AuthorDescriptionModel.author_id)
-            .order_by(BookModel.title, func.avg(BookRateModel.rate).desc())
+            .order_by(func.avg(BookRateModel.rate).desc(), BookModel.title)
         )
         result = await self.session.execute(query)
         books = result.all()

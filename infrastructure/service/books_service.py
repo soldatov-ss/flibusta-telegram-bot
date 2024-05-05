@@ -66,7 +66,7 @@ class BookService(RequestsRepo):
         result = await self.books.get_book_info_by_id(book_id)
         if not result:
             return None
-        book, file_name, average_rating = result[0]
+        book, file_name, average_rating = result
 
         book_info = BookInfoDTO(
             average_rating=round(average_rating, 2) if average_rating else None,

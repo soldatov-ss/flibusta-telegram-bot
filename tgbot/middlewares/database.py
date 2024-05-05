@@ -20,13 +20,13 @@ class DatabaseMiddleware(BaseMiddleware):
             data: Dict[str, Any],
     ) -> Any:
         async with get_repository() as repo:
+            event_from_user = data.get("event_from_user")
             user = await repo.users.get_or_create_user(
-                event.message.from_user.id,
-                event.message.from_user.full_name,
-                event.message.from_user.language_code,
-                event.message.from_user.username
+                event_from_user.id,
+                event_from_user.full_name,
+                event_from_user.language_code,
+                event_from_user.username,
             )
-            # data["session"] = session
             data["repo"] = repo
             data["user"] = user
 
