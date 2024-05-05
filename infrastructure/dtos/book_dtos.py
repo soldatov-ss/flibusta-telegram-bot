@@ -1,7 +1,11 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel
+
+from infrastructure.dtos.author_dtos import AuthorInfoDTO
+from infrastructure.dtos.genre_dtos import GenreInfoDTO
+from infrastructure.dtos.sequence_dtos import SequenceInfoDTO
 
 
 class BookInfoDTO(BaseModel):
@@ -28,4 +32,14 @@ class BookInfoDTO(BaseModel):
     pages: int
     chars: int
     average_rating: float = 0.0
-    file_name: Optional[str]
+    file_name: Optional[str] = None
+
+
+class BooksDTO(BookInfoDTO):
+    authors: Optional[List[str]] = []
+
+
+class BookFullInfoDTO(BookInfoDTO):
+    authors: Optional[List[AuthorInfoDTO]] = []
+    sequences: Optional[List[SequenceInfoDTO]] = []
+    genres: Optional[List[GenreInfoDTO]] = []
