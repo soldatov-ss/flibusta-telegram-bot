@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, Boolean, SmallInteger
 from .base import Base
 
 
-class SequenceDescriptionMode(Base):
+class SequenceDescriptionModel(Base):
     __tablename__ = 'libseq'
 
     book_id = Column('BookId', Integer, primary_key=True)

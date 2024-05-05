@@ -6,6 +6,6 @@ from .book_rate_model import BookRateModel
 from .file_model import FileNameModel
 from .genre_description_model import GenreDescriptionModel
 from .genre_model import GenreModel
-from .sequence_description_model import SequenceDescriptionMode
+from .sequence_description_model import SequenceDescriptionModel
 from .sequence_model import SequenceModel
 from .users import User
