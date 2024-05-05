@@ -19,12 +19,7 @@ class SequenceRepo(BaseRepo):
 
         if not sequences:
             return []
-
         return [SequenceInfoDTO(
-            book_id=description.book_id,
-            seq_id=sequence.seq_id,
-            seq_numb=description.seq_numb,
-            level=description.level,
-            type=description.type,
-            seq_name=sequence.seq_name
+            seq_name=sequence.seq_name,
+            **description.__dict__
         ) for description, sequence in sequences]

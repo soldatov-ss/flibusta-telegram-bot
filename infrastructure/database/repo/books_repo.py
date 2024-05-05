@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import Optional, List
 
 from sqlalchemy import select
-from sqlalchemy.orm import aliased
 
-from infrastructure.database.models import BookModel, AuthorModel, BookRateModel, FileNameModel, GenreModel, \
-    SequenceDescriptionModel
+from infrastructure.database.models import BookModel, FileNameModel, BookRateModel
 from infrastructure.database.repo.base import BaseRepo
+from infrastructure.dtos.book_dtos import BookInfoDTO
 
 
 class BookRepo(BaseRepo):
@@ -52,20 +51,37 @@ class BookRepo(BaseRepo):
         result = await self.session.execute(query)
         return result.all()
 
-    async def get_full_book_info(self, book_id: int):
-        book = await self.fetch_by_id(BookModel, book_id)
-
-        if not book:
+    async def get_book_info_by_id(self, book_id: int) -> Optional[BookInfoDTO]:
+        query = (
+            select(BookModel, BookRateModel, FileNameModel)
+            .outerjoin(BookRateModel, BookModel.book_id == BookRateModel.book_id)
+            .outerjoin(FileNameModel, BookModel.book_id == FileNameModel.book_id)
+            .where(BookModel.book_id == book_id)
+        )
+        result = await self.session.execute(query)
+        rows = result.all()
+        if not rows:
             return None
 
-        book_info = {
-            "book": book,
-            "authors": await self.fetch_many_by_id(AuthorModel, book_id),
-            "ratings": await self.fetch_many_by_id(BookRateModel, book_id),
-            "filenames": await self.fetch_many_by_id(FileNameModel, book_id),
-            "genres": await self.fetch_many_by_id(GenreModel, book_id),
-            "sequences": await self.fetch_many_by_id(SequenceDescriptionModel, book_id),
-        }
+        book = rows[0][0]
+
+        # Collect file name and all ratings
+        rates = [row[1] for row in rows if row[1]]
+        file_name = rows[0][2].file_name if rows[0][2] else None
+
+        average_rating = self.calculate_average_rating(rates)
+
+        book_info = BookInfoDTO(
+            average_rating=average_rating,
+            file_name=file_name,
+            **book.__dict__,
+        )
 
         return book_info
 
+    @staticmethod
+    def calculate_average_rating(rates: List[BookRateModel]) -> float:
+        total_rate = sum(int(rate.rate) for rate in rates if rate.rate.isdigit())
+        count_rate = len(rates)
+        average_rating = total_rate / count_rate if count_rate > 0 else 0.0
+        return round(average_rating, 2)

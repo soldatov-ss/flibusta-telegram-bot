@@ -22,17 +22,8 @@ class AuthorRepo(BaseRepo):
 
         authors_info = [AuthorInfoDTO(
             book_id=author.book_id,
-            author_id=author.author_id,
             pos=author.pos,
-            first_name=description.first_name,
-            middle_name=description.middle_name,
-            last_name=description.last_name,
-            nick_name=description.nick_name,
-            uid=description.uid,
-            email=description.email,
-            homepage=description.homepage,
-            gender=description.gender,
-            master_id=description.master_id
+            **description.__dict__
         ) for author, description in authors]
 
         return authors_info

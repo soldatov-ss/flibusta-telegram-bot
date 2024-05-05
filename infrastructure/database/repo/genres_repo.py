@@ -22,8 +22,5 @@ class GenreRepo(BaseRepo):
 
         return [GenreInfoDTO(
             book_id=genre.book_id,
-            genre_id=genre.genre_id,
-            genre_code=description.genre_code,
-            genre_desc=description.genre_desc,
-            genre_meta=description.genre_meta
+            **description.__dict__
         ) for genre, description in genres]
