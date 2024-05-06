@@ -1,4 +1,5 @@
 import logging
+import re
 
 from aiogram import Router, F
 from aiogram import types
@@ -11,6 +12,33 @@ from tgbot.misc.formatter import book_formatter
 
 books_router = Router()
 logger = logging.getLogger(__name__)
+
+
+def clean_html(raw_html):
+    cleanr = re.compile('<.*?>')  # This regex finds all HTML tags
+    cleantext = re.sub(cleanr, '', raw_html)  # This replaces all HTML tags with an empty string
+    return cleantext
+
+
+@books_router.message(F.text.regexp(r"^/book_(\d+)").as_("digits"))
+async def book_detail_handler(message: types.Message, digits: re.Match[str]):
+    if digits.group():
+        book_id = int(digits.group().split('_')[1])
+
+        async with get_repository() as repo:
+            book_service = BookService(session=repo.session)
+            book = await book_service.get_full_book_info(book_id)
+            if not book:
+                return await message.reply("Book not found.")
+
+            text = f'📖 <b>{book.title}</b>\n' \
+                   f'<i>{book.authors}</i>\n' \
+                   f'{book.sequences} \n' \
+                   f'<i>{book.genres}</i>\n\n' \
+                   f'{clean_html(book.body)}'
+            await message.reply(text, parse_mode='HTML')
+    else:
+        await message.reply('Invalid book id!')
 
 
 @books_router.message(F.text, StateFilter(None))

@@ -9,3 +9,4 @@ from .genre_model import GenreModel
 from .sequence_description_model import SequenceDescriptionModel
 from .sequence_model import SequenceModel
 from .users import User
+from .book_annotations_model import BookAnnotationsModel

@@ -1,6 +1,7 @@
 from sqlalchemy import select, func
 
 from infrastructure.database.models import BookModel, FileNameModel, BookRateModel, AuthorModel, AuthorDescriptionModel
+from infrastructure.database.models.book_annotations_model import BookAnnotationsModel
 from infrastructure.database.repo.base import BaseRepo
 
 
@@ -11,11 +12,16 @@ class BookRepo(BaseRepo):
             select(
                 BookModel,
                 FileNameModel.file_name,
-                func.avg(BookRateModel.rate).label("average_rating")
+                BookAnnotationsModel.body,
+                func.avg(BookRateModel.rate).label("average_rating"),
             )
             .outerjoin(BookRateModel, BookModel.book_id == BookRateModel.book_id)
             .outerjoin(FileNameModel, BookModel.book_id == FileNameModel.book_id)
+            .outerjoin(BookAnnotationsModel, BookModel.book_id == BookAnnotationsModel.book_id)
             .where(BookModel.book_id == book_id)
+            .group_by(
+                BookModel.book_id, FileNameModel.file_name, BookAnnotationsModel.body
+            )
         )
         result = await self.session.execute(query)
         rows = result.all()
