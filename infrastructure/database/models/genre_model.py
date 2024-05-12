@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, UniqueConstraint, Index
 
 from .base import Base
 
@@ -6,5 +6,13 @@ from .base import Base
 class GenreModel(Base):
     __tablename__ = 'libgenre'
 
-    book_id = Column('BookId', Integer, primary_key=True, nullable=False)
-    genre_id = Column('GenreId', Integer, primary_key=True, nullable=False)
+    id = Column('Id', Integer, primary_key=True, autoincrement=True)
+    book_id = Column('BookId', Integer, nullable=False, default=0)
+    genre_id = Column('GenreId', Integer, nullable=False, default=0)
+
+    __table_args__ = (
+        UniqueConstraint('BookId', 'GenreId', name='u'),
+        Index('ibook', 'BookId'),
+        Index('igenre', 'GenreId'),
+        {'mysql_collate': 'utf8mb3_unicode_ci', 'mysql_row_format': 'DYNAMIC'}
+    )

@@ -10,3 +10,4 @@ from .sequence_description_model import SequenceDescriptionModel
 from .sequence_model import SequenceModel
 from .users import User
 from .book_annotations_model import BookAnnotationsModel
+from .joined_books_model import JoinedBooksModel
