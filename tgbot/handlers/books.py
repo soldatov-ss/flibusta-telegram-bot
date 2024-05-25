@@ -35,7 +35,7 @@ async def book_detail_handler(message: types.Message, digits: re.Match[str]):
                    f'<i>{book.authors}</i>\n' \
                    f'{book.sequences} \n' \
                    f'<i>{book.genres}</i>\n\n' \
-                   f'{clean_html(book.body)}'
+                   f'{clean_html(book.body) if book.body else "There is no description"}'
             await message.reply(text, parse_mode='HTML')
     else:
         await message.reply('Invalid book id!')
@@ -60,7 +60,7 @@ async def handle_books_by_title(message: types.Message):
             authors = ', '.join(book.authors) if book.authors else "Unknown Author"
             link = f"/book_{book.book_id}"
 
-            page_text = book_formatter(len(books), authors, book.title, link, is_first_page)
+            page_text = book_formatter(len(books), authors, book, link, is_first_page)
             text_data.append(page_text)
 
         paginator = TextPaginator(
