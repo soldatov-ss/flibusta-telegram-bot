@@ -4,6 +4,7 @@ from typing import Optional, List
 from infrastructure.database.models import AuthorDescriptionModel
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.dtos.book_dtos import BookFullInfoDTO, BooksDTO
+from infrastructure.enums.book_enums import DefaultBookFileFormats
 
 
 @dataclass
@@ -79,3 +80,9 @@ class BookService(RequestsRepo):
     @staticmethod
     def get_author_full_name(author: AuthorDescriptionModel) -> str:
         return f'{author.first_name} {author.middle_name} {author.last_name}'.strip()
+
+    @staticmethod
+    def get_book_file_formats(book: BookFullInfoDTO):
+        if book.file_name:
+            return [book.file_name.split('.')[-1].lower()]
+        return DefaultBookFileFormats.list()

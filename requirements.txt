@@ -5,7 +5,8 @@ aiogram-widgets==1.2.7
 environs~=9.0
 redis
 betterlogging
-
+beautifulsoup4~=4.12.3
+lxml~=5.2.2
 # # For enabling api:
 backoff
 ujson
