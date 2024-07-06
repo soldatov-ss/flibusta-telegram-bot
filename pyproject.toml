@@ -1,0 +1,41 @@
+[tool.ruff]
+
+# List of enabled linters and rules:
+lint.select = [
+    "E",   # pycodestyle - PEP 8 style and code formatting
+    "F",   # pyflakes - search for potential errors and unused variables
+    "I",   # isort - sorting and grouping of imports
+    "C",   # McCabe complexity - assessment of code complexity
+    "B",   # black - automatic code formatting
+    "RUF100",   # mypy - static type checking and data type verification
+    "UP",  # pyupgrade - code upgrade to new Python versions and compatibility
+]
+# Do not ignore any rules or linters.
+lint.ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+lint.fixable = ["ALL"]
+# No rules are marked as unfixable.
+lint.unfixable = []
+
+# Exclude a variety of commonly ignored directories.
+lint.exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".venv",
+    "__pypackages__",
+    "venv",
+]
+# No per-file ignores defined.
+lint.per-file-ignores = {}
+
+# Set the maximum line length to 120 characters, following PEP 8.
+line-length = 120
+
+# Allow unused variables when they start with an underscore.
+lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Assume the target Python version is 3.11 for linting.
+target-version = "py311"

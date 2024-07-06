@@ -20,3 +20,4 @@ aiomysql==0.2.0
 mysqlclient==2.2.4
 
 cryptography==42.0.5
+ruff~=0.5
