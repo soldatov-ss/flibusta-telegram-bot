@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
 
 from infrastructure.database.setup import session_pool
-from tgbot.config import load_config, Config
+from tgbot.config import Config, load_config
 from tgbot.handlers import routers_list
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.middlewares.database import DatabaseMiddleware
@@ -84,7 +84,7 @@ async def main():
     config = load_config(".env")
     storage = get_storage(config)
 
-    bot = Bot(token=config.tg_bot.token, default=DefaultBotProperties(parse_mode='HTML'))
+    bot = Bot(token=config.tg_bot.token, default=DefaultBotProperties(parse_mode="HTML"))
     dp = Dispatcher(storage=storage)
 
     dp.include_routers(*routers_list)

@@ -10,8 +10,5 @@ class DownloadCallbackData(CallbackData, prefix="download"):
 def book_download_keyboard(file_formats: list, book_id: int):
     keyboard = InlineKeyboardBuilder()
     for file_format in file_formats:
-        keyboard.button(
-            text=file_format,
-            callback_data=DownloadCallbackData(book_id=book_id, file_format=file_format)
-        )
+        keyboard.button(text=file_format, callback_data=DownloadCallbackData(book_id=book_id, file_format=file_format))
     return keyboard.as_markup()

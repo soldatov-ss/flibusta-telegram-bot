@@ -1,5 +1,4 @@
-from aiogram import Router, F
-from aiogram import types
+from aiogram import F, Router, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hcode
 

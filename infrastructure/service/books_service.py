@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional, List
 
 from infrastructure.database.models import AuthorDescriptionModel
 from infrastructure.database.repo.requests import RequestsRepo
@@ -10,7 +9,7 @@ from tgbot.misc.book_utils import get_book_file
 
 @dataclass
 class BookService(RequestsRepo):
-    async def get_full_book_info(self, book_id: int) -> Optional[BookFullInfoDTO]:
+    async def get_full_book_info(self, book_id: int) -> BookFullInfoDTO | None:
         """
         Retrieves detailed information about a book including its authors, sequences, and genres.
         :param book_id: ID of the book to retrieve.
@@ -39,7 +38,7 @@ class BookService(RequestsRepo):
         )
         return full_book_info
 
-    async def get_books_with_authors_by_title(self, title: str) -> Optional[List[BooksDTO]]:
+    async def get_books_with_authors_by_title(self, title: str) -> list[BooksDTO] | None:
         """
         Searches for books by title and includes associated authors and their average ratings.
         :param title: The title substring to search for.
@@ -56,7 +55,7 @@ class BookService(RequestsRepo):
                 books_dict[book.book_id] = {
                     **book.__dict__,
                     "average_rating": round(average_rate, 2) if average_rate else 0.0,
-                    "authors": []
+                    "authors": [],
                 }
             if description:
                 full_name = self.get_author_full_name(description)
@@ -65,27 +64,28 @@ class BookService(RequestsRepo):
         books_with_authors = [BooksDTO(**data) for data in books_dict.values()]
         return books_with_authors
 
-    async def gather_authors(self, book_id: int) -> Optional[List[str]]:
+    async def gather_authors(self, book_id: int) -> list[str] | None:
         authors = await self.authors.get_authors_by_book_id(book_id)
-        if not authors: return []
-        return [f'{author.first_name} {author.middle_name} {author.last_name}'.strip() for author in authors]
+        if not authors:
+            return []
+        return [f"{author.first_name} {author.middle_name} {author.last_name}".strip() for author in authors]
 
-    async def gather_sequences(self, book_id: int) -> Optional[List[str]]:
+    async def gather_sequences(self, book_id: int) -> list[str] | None:
         sequences = await self.sequences.get_sequences_by_book_id(book_id)
         return [sequence.seq_name.strip() for sequence in sequences if sequences]
 
-    async def gather_genres(self, book_id: int) -> Optional[List[str]]:
+    async def gather_genres(self, book_id: int) -> list[str] | None:
         genres = await self.genres.get_genres_by_book_id(book_id)
         return [genre.genre_desc.strip() for genre in genres if genres]
 
     @staticmethod
     def get_author_full_name(author: AuthorDescriptionModel) -> str:
-        return f'{author.first_name} {author.middle_name} {author.last_name}'.strip()
+        return f"{author.first_name} {author.middle_name} {author.last_name}".strip()
 
     @staticmethod
     def get_book_file_formats(book: BookFullInfoDTO):
         if book.file_name:
-            return [book.file_name.split('.')[-1].lower()]
+            return [book.file_name.split(".")[-1].lower()]
         return DefaultBookFileFormats.list()
 
     async def get_book_file_id(self, book: BookFullInfoDTO, file_format: str):

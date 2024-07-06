@@ -1,25 +1,20 @@
-from typing import Optional
 
-from sqlalchemy import String
-from sqlalchemy import text, BIGINT, Boolean, true
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.orm import relationship
+from sqlalchemy import BIGINT, Boolean, String, text, true
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .base import Base, TableNameMixin, TimestampMixin
 from .book_associations import book_user_association_table
-from .base import Base, TimestampMixin, TableNameMixin
 
 
 class User(Base, TimestampMixin, TableNameMixin):
     user_id: Mapped[int] = mapped_column(BIGINT, primary_key=True, autoincrement=False)
-    username: Mapped[Optional[str]] = mapped_column(String(128))
+    username: Mapped[str | None] = mapped_column(String(128))
     full_name: Mapped[str] = mapped_column(String(128))
     active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     language: Mapped[str] = mapped_column(String(10), server_default=text("'en'"))
 
     downloaded_books = relationship(
-        'BookInnerInfoModel',
-        secondary=book_user_association_table,
-        back_populates='downloaded_by'
+        "BookInnerInfoModel", secondary=book_user_association_table, back_populates="downloaded_by"
     )
 
     def __repr__(self):

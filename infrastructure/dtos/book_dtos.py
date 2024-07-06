@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional, List
 
 from pydantic import BaseModel
 
@@ -27,18 +26,18 @@ class BookInfoDTO(BaseModel):
     info_code: int
     pages: int
     chars: int
-    average_rating: Optional[float] = 0.0
-    file_name: Optional[str] = None
+    average_rating: float | None = 0.0
+    file_name: str | None = None
 
 
 class BooksDTO(BookInfoDTO):
-    authors: Optional[List[str]] = []
+    authors: list[str] | None = []
 
 
 class BookFullInfoDTO(BookInfoDTO):
-    authors: Optional[str]
-    sequences: Optional[str]
-    genres: Optional[str]
-    average_rating: Optional[float] = 0.0
-    file_name: Optional[str] = None
-    body: Optional[str] = None
+    authors: str | None
+    sequences: str | None
+    genres: str | None
+    average_rating: float | None = 0.0
+    file_name: str | None = None
+    body: str | None = None

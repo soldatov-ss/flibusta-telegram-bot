@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from typing import Optional, List
-from sqlalchemy.engine.url import URL
 
 from environs import Env
+from sqlalchemy.engine.url import URL
 
 
 @dataclass
@@ -60,9 +59,7 @@ class DbConfig:
         user = env.str("MYSQL_USER")
         database = env.str("MYSQL_DATABASE")
         port = env.int("DB_PORT", 3306)
-        return DbConfig(
-            host=host, password=password, user=user, database=database, port=port
-        )
+        return DbConfig(host=host, password=password, user=user, database=database, port=port)
 
 
 @dataclass
@@ -72,7 +69,7 @@ class TgBot:
     """
 
     token: str
-    admin_ids: List[int]
+    admin_ids: list[int]
     use_redis: bool
 
     @staticmethod
@@ -101,9 +98,9 @@ class RedisConfig:
         The host where Redis server is located.
     """
 
-    redis_pass: Optional[str]
-    redis_port: Optional[int]
-    redis_host: Optional[str]
+    redis_pass: str | None
+    redis_port: int | None
+    redis_host: str | None
 
     def dsn(self) -> str:
         """
@@ -123,9 +120,7 @@ class RedisConfig:
         redis_port = env.int("REDIS_PORT")
         redis_host = env.str("REDIS_HOST")
 
-        return RedisConfig(
-            redis_pass=redis_pass, redis_port=redis_port, redis_host=redis_host
-        )
+        return RedisConfig(redis_pass=redis_pass, redis_port=redis_port, redis_host=redis_host)
 
 
 @dataclass
@@ -166,8 +161,8 @@ class Config:
 
     tg_bot: TgBot
     misc: Miscellaneous
-    db: Optional[DbConfig] = None
-    redis: Optional[RedisConfig] = None
+    db: DbConfig | None = None
+    redis: RedisConfig | None = None
 
 
 def load_config(path: str = None) -> Config:

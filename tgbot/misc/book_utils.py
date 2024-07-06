@@ -24,11 +24,11 @@ def book_name_to_filename(book_name):
     Returns:
     - str: A string that is a valid filename.
     """
-    normalized_name = unicodedata.normalize('NFKD', book_name)
-    name_without_diacritics = ''.join(c for c in normalized_name if not unicodedata.combining(c))
+    normalized_name = unicodedata.normalize("NFKD", book_name)
+    name_without_diacritics = "".join(c for c in normalized_name if not unicodedata.combining(c))
 
-    cleaned_name = re.sub(r'[^\w\s-]', '', name_without_diacritics)
-    cleaned_name = re.sub(r'[-\s]+', '_', cleaned_name).strip('_')
+    cleaned_name = re.sub(r"[^\w\s-]", "", name_without_diacritics)
+    cleaned_name = re.sub(r"[-\s]+", "_", cleaned_name).strip("_")
 
     return cleaned_name
 
@@ -42,7 +42,7 @@ async def get_book_file(book: BookFullInfoDTO, file_format: str):
         file_name = f"{file_name}.{file_format}"
         format_to_download = file_format
 
-    url = f'https://flibusta.is/b/{book.book_id}/{format_to_download}'
+    url = f"https://flibusta.is/b/{book.book_id}/{format_to_download}"
     book = URLInputFile(url, filename=file_name)
     return book
 
@@ -63,13 +63,13 @@ def clean_html(raw_html):
     :param raw_html: The raw HTML content to clean.
     :return: Cleaned text without HTML tags, links, and 'collapse' sections.
     """
-    soup = BeautifulSoup(raw_html, 'lxml')
+    soup = BeautifulSoup(raw_html, "lxml")
 
     # Remove all links
-    for a in soup.find_all('a'):
+    for a in soup.find_all("a"):
         a.decompose()
 
     cleantext = soup.get_text(separator=" ")
-    cleantext = re.sub(r'\[collapse collapsed.*?\[/collapse\]', '', cleantext, flags=re.DOTALL)
+    cleantext = re.sub(r"\[collapse collapsed.*?\[/collapse\]", "", cleantext, flags=re.DOTALL)
 
     return cleantext
