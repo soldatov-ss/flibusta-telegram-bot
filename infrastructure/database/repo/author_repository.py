@@ -6,7 +6,7 @@ from infrastructure.dtos.author_dtos import AuthorBaseDTO, AuthorInfoDTO
 
 
 class AuthorRepo(BaseRepo):
-    async def get_authors_by_book_id(self, book_id: int) -> list[AuthorInfoDTO] | None:
+    async def get_authors_by_book_id(self, book_id: int) -> list[AuthorInfoDTO] | []:
         query = (
             select(AuthorModel, AuthorDescriptionModel)
             .join(AuthorDescriptionModel, AuthorModel.author_id == AuthorDescriptionModel.author_id)
@@ -23,7 +23,7 @@ class AuthorRepo(BaseRepo):
         ]
         return authors_info
 
-    async def get_authors_by_name(self, name: str) -> list[AuthorInfoDTO] | None:
+    async def get_authors_by_name(self, name: str) -> list[AuthorInfoDTO] | []:
         """
         Retrieves a list of authors based on a provided name, ensuring each author has associated books.
 
