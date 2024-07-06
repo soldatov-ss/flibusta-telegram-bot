@@ -10,7 +10,7 @@ from aiogram_widgets.pagination import TextPaginator
 from infrastructure.database.service import get_repository
 from infrastructure.service.books_service import BookService
 from tgbot.keyboards.inline import DownloadCallbackData, book_download_keyboard
-from tgbot.misc.book_utils import get_book_file, is_file_size_valid, clean_html
+from tgbot.misc.book_utils import is_file_size_valid, clean_html
 from tgbot.misc.formatter import book_formatter
 
 books_router = Router()
@@ -94,10 +94,12 @@ async def download_book(query: CallbackQuery, callback_data: DownloadCallbackDat
             return await query.message.edit_text(f'The file size is too big. Try download from flibusta site')
 
     message = await query.message.edit_text(f'Started downloading the book. Book id: {book_id}')
-
     try:
-        book_file = await get_book_file(book, file_format)
-        await query.message.answer_document(document=book_file, caption=book.title)
+        file = await book_service.get_book_file_id(book, file_format)
+        sent_message = await query.message.answer_document(file, caption=book.title)
+        await repo.users.proceed_user_download_book(query.from_user.id, book_id, sent_message.document.file_id,
+                                                    file_format)
+
         await message.delete()
     except Exception as e:
         logger.error(f"Error downloading book with ID {book.book_id} format: {file_format}: {e}")

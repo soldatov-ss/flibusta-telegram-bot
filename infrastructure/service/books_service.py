@@ -5,6 +5,7 @@ from infrastructure.database.models import AuthorDescriptionModel
 from infrastructure.database.repo.requests import RequestsRepo
 from infrastructure.dtos.book_dtos import BookFullInfoDTO, BooksDTO
 from infrastructure.enums.book_enums import DefaultBookFileFormats
+from tgbot.misc.book_utils import get_book_file
 
 
 @dataclass
@@ -86,3 +87,9 @@ class BookService(RequestsRepo):
         if book.file_name:
             return [book.file_name.split('.')[-1].lower()]
         return DefaultBookFileFormats.list()
+
+    async def get_book_file_id(self, book: BookFullInfoDTO, file_format: str):
+        inner_book = await self.books.get_book_file_id(book.book_id, file_format)
+        if not inner_book:
+            return await get_book_file(book, file_format)
+        return inner_book.file_id

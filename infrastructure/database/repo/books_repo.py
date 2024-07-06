@@ -1,7 +1,9 @@
+from typing import Optional
+
 from sqlalchemy import select, func, not_
 
 from infrastructure.database.models import BookModel, FileNameModel, BookRateModel, AuthorModel, AuthorDescriptionModel, \
-    JoinedBooksModel
+    JoinedBooksModel, BookInnerInfoModel
 from infrastructure.database.models.book_annotations_model import BookAnnotationsModel
 from infrastructure.database.repo.base import BaseRepo
 
@@ -57,3 +59,11 @@ class BookRepo(BaseRepo):
         if not books:
             return []
         return books
+
+    async def get_book_file_id(self, book_id: int, file_format: str) -> Optional[BookInnerInfoModel]:
+        query = select(BookInnerInfoModel).where(
+            BookInnerInfoModel.book_id == book_id,
+            BookInnerInfoModel.file_type == file_format
+        )
+        result = (await self.session.execute(query)).scalar_one_or_none()
+        return result

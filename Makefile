@@ -8,7 +8,7 @@ db-host:
 	@docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' flibusta-telegram-bot-db-1
 
 alembic-revision:
-	read -p "Enter name of migration: " message
+	read -p "Enter name of migration: " $message
 	docker-compose exec bot alembic revision --autogenerate -m "$message"
 
 alembic-upgrade:

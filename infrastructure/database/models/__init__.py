@@ -11,3 +11,5 @@ from .sequence_model import SequenceModel
 from .users import User
 from .book_annotations_model import BookAnnotationsModel
 from .joined_books_model import JoinedBooksModel
+from .book_inner_info_model import BookInnerInfoModel
+from .book_associations import book_user_association_table
