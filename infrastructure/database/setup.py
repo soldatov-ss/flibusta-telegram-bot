@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
-from infrastructure.api.app import config
-from tgbot.config import DbConfig
+from tgbot.config import DbConfig, load_config, Config
+
+config: Config = load_config(".env")
 
 
 def create_engine(db: DbConfig, echo=False):

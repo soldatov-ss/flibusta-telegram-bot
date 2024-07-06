@@ -3,7 +3,6 @@ aiogram-inline-paginations==0.1.12
 aiogram-widgets==1.2.7
 
 environs~=9.0
-redis
 betterlogging
 beautifulsoup4~=4.12.3
 lxml~=5.2.2
@@ -20,5 +19,4 @@ alembic~=1.0
 aiomysql==0.2.0
 mysqlclient==2.2.4
 
-fastapi
 cryptography==42.0.5

@@ -2,11 +2,11 @@ from dataclasses import dataclass
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from infrastructure.database.repo.author_repo import AuthorRepo
-from infrastructure.database.repo.books_repo import BookRepo
-from infrastructure.database.repo.genres_repo import GenreRepo
-from infrastructure.database.repo.sequence_repo import SequenceRepo
-from infrastructure.database.repo.users import UserRepo
+from infrastructure.database.repo.author_repository import AuthorRepo
+from infrastructure.database.repo.books_repository import BookRepo
+from infrastructure.database.repo.genres_repository import GenreRepo
+from infrastructure.database.repo.sequence_repository import SequenceRepo
+from infrastructure.database.repo.user_repository import UserRepo
 
 
 @dataclass
