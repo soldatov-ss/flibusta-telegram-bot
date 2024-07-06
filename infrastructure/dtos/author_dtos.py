@@ -1,10 +1,8 @@
 from pydantic import BaseModel
 
 
-class AuthorInfoDTO(BaseModel):
-    book_id: int
+class AuthorBaseDTO(BaseModel):
     author_id: int
-    pos: int
     first_name: str
     middle_name: str
     last_name: str
@@ -14,3 +12,8 @@ class AuthorInfoDTO(BaseModel):
     homepage: str
     gender: str
     master_id: int
+
+
+class AuthorInfoDTO(AuthorBaseDTO):
+    book_id: int
+    pos: int
