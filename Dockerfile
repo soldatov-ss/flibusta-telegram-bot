@@ -1,6 +1,16 @@
-FROM python:latest
+FROM python:3.11.9-slim-bullseye
 
-WORKDIR /src
-COPY requirements.txt /src
-RUN pip install -r requirements.txt
-COPY . /src
+
+RUN apt-get update \
+    && apt-get upgrade -y \
+    && apt-get install -y gcc default-libmysqlclient-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /usr/src/app/bot
+
+COPY requirements.txt /usr/src/app/bot
+
+RUN pip install --upgrade pip \
+    pip install -r /usr/src/app/bot/requirements.txt
+
+COPY . /usr/src/app/bot

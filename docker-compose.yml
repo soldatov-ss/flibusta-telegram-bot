@@ -1,42 +1,35 @@
-version: '3.1'
+version: '3.8'
 
 services:
-  db:
-    # ВНИМАТЕЛЬНО! ВОТ ЭТО НАЗВАНИЕ СЕРВИСА - db - ДОЛЖНО БЫТЬ УКАЗАНО В БОТЕ КАК host В ПОДКЛЮЧЕНИИ К БАЗЕ ИЗ БОТА
-    # ТО ЕСТЬ НЕ АЙПИШНИК И НЕ ЛОКАЛХОСТ, А db
-    # DB_HOST: db
-    container_name: database
-    image: sameersbn/postgresql:10-2
-    env_file:
-       - ".env"
-    environment:
-      DB_PASS: $DB_PASS
-    restart: always
-    ports:
-      - 5432:5432
-    networks:
-      - botnet
-    volumes:
-      - ./postgres:/var/lib/postgresql
-
-  tgbot:
-    container_name: bot
+  bot:
+    image: "bot"
+    stop_signal: SIGINT
     build:
       context: .
-    command: python app.py
-    networks:
-      - botnet
+    working_dir: "/usr/src/app/bot"
+    volumes:
+      - .:/usr/src/app/bot
+    command: python3 -m bot
     restart: always
     env_file:
       - ".env"
-    volumes:
-      - .:/src
-    # Бот стартует после запуска базы
     depends_on:
       - db
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
-# указываются используемые сети
-networks:
-  botnet:
-    # указывается драйвер сети
-    driver: bridge
+  db:
+    image: mysql:8.0
+    env_file:
+      - ".env"
+    restart: always
+    ports:
+      - 3307:3306
+    volumes:
+      - ./data:/var/lib/mysql
+
+volumes:
+  db: { }
