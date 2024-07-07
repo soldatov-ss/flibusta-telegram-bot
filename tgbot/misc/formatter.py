@@ -21,6 +21,18 @@ def book_formatter(count: int, authors: str, book: BooksDTO, link: str, is_first
         return f"{title_line}\n{author_line}\n{download_line}"
 
 
+def book_by_author_formatter(count: int, author: str, book: BooksDTO, link: str, is_first_page: bool) -> str:
+    link = format_link(link)
+
+    title_line = f"📖 <b>{book.title}</b> - <i>{book.lang}</i>"
+    download_line = f"⬇ Download: /{link}"
+
+    if is_first_page:
+        return f"🔎 Found {count} books total 🔍\n<b>{author}</b>\n\n{title_line}\n{download_line}"
+    else:
+        return f"{title_line}\n{download_line}"
+
+
 def detailed_book_formatter(book: BookFullInfoDTO) -> str:
     description = clean_html(book.body) if book.body else "No description available."
     return (

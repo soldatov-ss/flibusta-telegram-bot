@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from infrastructure.database.models import AuthorDescriptionModel
 from infrastructure.database.repo.requests import RequestsRepo
-from infrastructure.dtos.book_dtos import BookFullInfoDTO, BooksDTO
+from infrastructure.dtos.book_dtos import BookFullInfoDTO, BookInfoDTO, BooksDTO
 from infrastructure.enums.book_enums import DefaultBookFileFormats
 from tgbot.misc.book_utils import get_book_file
 
@@ -63,6 +63,26 @@ class BookService(RequestsRepo):
 
         books_with_authors = [BooksDTO(**data) for data in books_dict.values()]
         return books_with_authors
+
+    async def get_books_by_author(self, author_id: int) -> tuple[list[BookInfoDTO], str] | None:
+        books = await self.books.get_books_by_author_id(author_id)
+        if not books:
+            return None
+
+        author = None
+        books_dict = {}
+
+        for book, description, average_rate in books:
+            if book.book_id not in books_dict:
+                books_dict[book.book_id] = {
+                    **book.__dict__,
+                    "average_rating": round(average_rate, 2) if average_rate else 0.0,
+                }
+            if description and author is None:
+                author = self.get_author_full_name(description)
+
+        books_by_author = [BookInfoDTO(**data) for data in books_dict.values()]
+        return books_by_author, author
 
     async def gather_authors(self, book_id: int) -> list[str] | None:
         authors = await self.authors.get_authors_by_book_id(book_id)
