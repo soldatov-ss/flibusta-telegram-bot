@@ -1,5 +1,6 @@
 from infrastructure.dtos.author_dtos import AuthorBaseDTO
-from infrastructure.dtos.book_dtos import BooksDTO
+from infrastructure.dtos.book_dtos import BookFullInfoDTO, BooksDTO
+from tgbot.misc.book_utils import clean_html
 
 
 def format_link(link: str) -> str:
@@ -18,6 +19,17 @@ def book_formatter(count: int, authors: str, book: BooksDTO, link: str, is_first
         return f"🔎 Found {count} books total 🔍\n\n{title_line}\n{author_line}\n{download_line}"
     else:
         return f"{title_line}\n{author_line}\n{download_line}"
+
+
+def detailed_book_formatter(book: BookFullInfoDTO) -> str:
+    description = clean_html(book.body) if book.body else "No description available."
+    return (
+        f"📖 <b>{book.title}</b>\n"
+        f"<i>{book.authors}</i>\n"
+        f"{book.sequences} \n"
+        f"<i>{book.genres}</i>\n\n"
+        f"{description}"[:4095]
+    )
 
 
 def author_formatter(count: int, author: AuthorBaseDTO, link: str, is_first_page: bool) -> str:

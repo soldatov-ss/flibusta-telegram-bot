@@ -27,6 +27,7 @@ lint.exclude = [
     ".venv",
     "__pypackages__",
     "venv",
+    "migrations/"
 ]
 # No per-file ignores defined.
 lint.per-file-ignores = {}

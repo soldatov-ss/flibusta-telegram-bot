@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from infrastructure.database.models import GenreDescriptionModel, GenreModel

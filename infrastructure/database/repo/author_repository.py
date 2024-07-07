@@ -35,22 +35,20 @@ class AuthorRepo(BaseRepo):
             return []
 
         book_exists_subquery = (
-            select(AuthorModel.author_id)
-            .where(AuthorModel.author_id == AuthorDescriptionModel.author_id)
-            .exists()
+            select(AuthorModel.author_id).where(AuthorModel.author_id == AuthorDescriptionModel.author_id).exists()
         )
 
         conditions = []
         if len(name_parts) == 2:
             first_name, last_name = name_parts
-            conditions.append(AuthorDescriptionModel.first_name.ilike(f'{first_name}%'))
-            conditions.append(AuthorDescriptionModel.last_name.ilike(f'{last_name}%'))
+            conditions.append(AuthorDescriptionModel.first_name.ilike(f"{first_name}%"))
+            conditions.append(AuthorDescriptionModel.last_name.ilike(f"{last_name}%"))
         else:
             name = name_parts[0]
             conditions.append(
                 or_(
-                    AuthorDescriptionModel.first_name.ilike(f'{name}%'),
-                    AuthorDescriptionModel.last_name.ilike(f'{name}%')
+                    AuthorDescriptionModel.first_name.ilike(f"{name}%"),
+                    AuthorDescriptionModel.last_name.ilike(f"{name}%"),
                 )
             )
         conditions.append(exists(book_exists_subquery))

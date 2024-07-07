@@ -1,4 +1,3 @@
-
 from sqlalchemy import func, not_, select
 
 from infrastructure.database.models import (

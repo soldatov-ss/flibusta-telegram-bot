@@ -1,4 +1,3 @@
-
 from sqlalchemy import BIGINT, Boolean, String, text, true
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

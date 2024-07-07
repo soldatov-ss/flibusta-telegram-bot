@@ -9,8 +9,8 @@ from infrastructure.database.service import get_repository
 from infrastructure.service.books_service import BookService
 from tgbot.keyboards.inline import DownloadCallbackData, book_download_keyboard
 from tgbot.keyboards.paginator import handle_pagination
-from tgbot.misc.book_utils import clean_html, is_file_size_valid
-from tgbot.misc.formatter import book_formatter
+from tgbot.misc.book_utils import is_file_size_valid
+from tgbot.misc.formatter import book_formatter, detailed_book_formatter
 
 books_router = Router()
 logger = logging.getLogger(__name__)
@@ -27,23 +27,15 @@ async def book_detail_handler(message: types.Message, digits: re.Match[str]):
             if not book:
                 return await message.reply("Book not found.")
 
-            text = (
-                f'📖 <b>{book.title}</b>\n'
-                f'<i>{book.authors}</i>\n'
-                f'{book.sequences} \n'
-                f'<i>{book.genres}</i>\n\n'
-                f'{clean_html(book.body) if book.body else "There is no description"}'[:4095]
-            )
-
             formats = book_service.get_book_file_formats(book)
             keyboard = book_download_keyboard(formats, book_id)
-            await message.reply(text, parse_mode="HTML", reply_markup=keyboard)
+            await message.reply(detailed_book_formatter(book), parse_mode="HTML", reply_markup=keyboard)
     else:
         await message.reply("Invalid book id!")
 
 
 @books_router.message(F.text, StateFilter(None))
-async def handle_books_by_title(message: types.Message):
+async def handle_books_by_title_handler(message: types.Message):
     async with get_repository() as repo:
         book_service = BookService(session=repo.session)
         try:
@@ -56,18 +48,15 @@ async def handle_books_by_title(message: types.Message):
             return await message.answer("No books found with the specified title.")
 
         books_data = [
-            (
-                ", ".join(book.authors) if book.authors else "Unknown Author",
-                book,
-                f"/book_{book.book_id}",
-                i == 0
-            ) for i, book in enumerate(books)]
+            (", ".join(book.authors) if book.authors else "Unknown Author", book, f"/book_{book.book_id}", i == 0)
+            for i, book in enumerate(books)
+        ]
         text_data: list[str] = [book_formatter(len(books), *item) for item in books_data]
         await handle_pagination(message, text_data, books_router)
 
 
 @books_router.callback_query(DownloadCallbackData.filter())
-async def download_book(query: CallbackQuery, callback_data: DownloadCallbackData):
+async def download_book_handler(query: CallbackQuery, callback_data: DownloadCallbackData):
     await query.answer()
 
     book_id = callback_data.book_id

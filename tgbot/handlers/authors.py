@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 @author_router.message(F.text, Command("author"))
-async def handle_authors_by_name(message: Message, command: CommandObject):
+async def handle_authors_by_name_handler(message: Message, command: CommandObject):
     if command.args is None:
         return await message.reply(get_author_missing_args_message())
 
