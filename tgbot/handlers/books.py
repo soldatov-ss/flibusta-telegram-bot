@@ -4,11 +4,11 @@ import re
 from aiogram import F, Router, types
 from aiogram.filters import StateFilter
 from aiogram.types import CallbackQuery
-from aiogram_widgets.pagination import TextPaginator
 
 from infrastructure.database.service import get_repository
 from infrastructure.service.books_service import BookService
 from tgbot.keyboards.inline import DownloadCallbackData, book_download_keyboard
+from tgbot.keyboards.paginator import handle_pagination
 from tgbot.misc.book_utils import clean_html, is_file_size_valid
 from tgbot.misc.formatter import book_formatter
 
@@ -49,32 +49,21 @@ async def handle_books_by_title(message: types.Message):
         try:
             books = await book_service.get_books_with_authors_by_title(message.text.strip())
         except Exception as e:
-            logging.error(f"Failed to fetch books: {message.text.strip()}. Error: {e}")
+            logger.error(f"Failed to fetch books: {message.text.strip()}. Error: {e}")
             return await message.answer("Failed to retrieve book data. Please try again later.")
 
         if not books:
             return await message.answer("No books found with the specified title.")
 
-        text_data = []
-        for i, book in enumerate(books, start=1):
-            is_first_page = i == 1
-            authors = ", ".join(book.authors) if book.authors else "Unknown Author"
-            link = f"/book_{book.book_id}"
-
-            page_text = book_formatter(len(books), authors, book, link, is_first_page)
-            text_data.append(page_text)
-
-        paginator = TextPaginator(
-            data=text_data,
-            router=books_router,
-            join_symbol="\n\n",
-        )
-        current_text_chunk, reply_markup = paginator.current_message_data
-
-        await message.answer(
-            text=current_text_chunk,
-            reply_markup=reply_markup,
-        )
+        books_data = [
+            (
+                ", ".join(book.authors) if book.authors else "Unknown Author",
+                book,
+                f"/book_{book.book_id}",
+                i == 0
+            ) for i, book in enumerate(books)]
+        text_data: list[str] = [book_formatter(len(books), *item) for item in books_data]
+        await handle_pagination(message, text_data, books_router)
 
 
 @books_router.callback_query(DownloadCallbackData.filter())
