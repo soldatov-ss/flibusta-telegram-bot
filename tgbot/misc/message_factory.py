@@ -9,6 +9,6 @@ def get_author_missing_args_message() -> str:
 def get_missing_book_sequence_args_message() -> str:
     return (
         "Please specify the book sequence name to search.\n"
-        "For example: /sequence <i>series name</i>\n"
+        "For example: /sequence <i>sequence name</i>\n"
         "Example: /sequence Game of Thrones"
     )
