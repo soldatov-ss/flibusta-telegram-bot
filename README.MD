@@ -1,8 +1,9 @@
 # Flibusta Telegram Bot
 
-#### Teleram bot created to help users download books from Flibusta. With this bot, users can search for books by title, author, or sequence and download them in various formats, including FB2, EPUB, MOBI, PDF, and more.
+Teleram bot created to help users download books from Flibusta. With this bot, users can search for books by title, author, or sequence and download them in various formats, including FB2, EPUB, MOBI, PDF, and more.
 
-##### Getting Started
+----------------------------
+### Getting Started
 
 **1. Clone the Repository**
 
@@ -35,7 +36,7 @@ make alembic-upgrade
 ```
 
 
-
+---------------------------
 ##### **Contributing**
 
 Feel free to submit issues or pull requests if you want to contribute to this project.
