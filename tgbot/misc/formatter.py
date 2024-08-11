@@ -69,3 +69,18 @@ def sequence_formatter(count: int, sequence: SequenceDTO, link: str, is_first_pa
         return f"🔎 Found {count} sequences total 🔍\n\n{sequence_line}\n{author_line}\n{books_line}"
     else:
         return f"{sequence_line}\n{author_line}\n{books_line}"
+
+
+def books_by_sequence_formatter(count: int, author: str, sequence_name: str, book: BooksDTO, link: str,
+                                is_first_page: bool) -> str:
+    link = format_link(link)
+
+    title_line = f"📚 <b>{sequence_name}</b>"
+    author_line = f"<i>{author}</i>"
+    book_line = f"📖 <b>{book.title}</b> - <i>{book.lang}</i>"
+    download_line = f"⬇ Download: /{link}"
+
+    if is_first_page:
+        return f"🔎 Found {count} books total 🔍\n\n{title_line}\n{author_line}\n\n{book_line}\n{download_line}"
+    else:
+        return f"{book_line}\n{download_line}"

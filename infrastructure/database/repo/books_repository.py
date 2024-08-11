@@ -1,4 +1,5 @@
 from sqlalchemy import func, not_, select
+from sqlalchemy.orm import aliased
 
 from infrastructure.database.models import (
     AuthorDescriptionModel,
@@ -8,6 +9,8 @@ from infrastructure.database.models import (
     BookRateModel,
     FileNameModel,
     JoinedBooksModel,
+    SequenceDescriptionModel,
+    SequenceModel,
 )
 from infrastructure.database.models.book_annotations_model import BookAnnotationsModel
 from infrastructure.database.repo.base import BaseRepo
@@ -86,4 +89,41 @@ class BookRepo(BaseRepo):
         books = result.all()
         if not books:
             return []
+        return books
+
+    async def get_books_by_sequence_id(self, seq_id: int):
+        subquery_bad_ids = select(JoinedBooksModel.bad_id).subquery()
+
+        SequenceAlias = aliased(SequenceModel)
+        SequenceDescriptionAlias = aliased(SequenceDescriptionModel)
+        AuthorAlias = aliased(AuthorModel)
+        AuthorDescriptionAlias = aliased(AuthorDescriptionModel)
+
+        query = (
+            select(
+                BookModel,
+                AuthorDescriptionAlias,
+                func.avg(BookRateModel.rate).label("average_rating"),
+                SequenceAlias.seq_name
+            )
+            .outerjoin(SequenceDescriptionAlias, BookModel.book_id == SequenceDescriptionAlias.book_id)
+            .outerjoin(SequenceAlias,
+                       SequenceDescriptionAlias.seq_id == SequenceAlias.seq_id)
+            .outerjoin(AuthorAlias, BookModel.book_id == AuthorAlias.book_id)
+            .outerjoin(AuthorDescriptionAlias, AuthorAlias.author_id == AuthorDescriptionAlias.author_id)
+            .outerjoin(BookRateModel, BookModel.book_id == BookRateModel.book_id)
+            .where(
+                SequenceDescriptionAlias.seq_id == seq_id,
+                not_(BookModel.book_id.in_(subquery_bad_ids)),  # type: ignore
+            )
+            .group_by(BookModel.book_id, AuthorAlias.author_id, AuthorDescriptionAlias.author_id,
+                      SequenceAlias.seq_name)
+            .order_by(func.avg(BookRateModel.rate).desc(), BookModel.title)
+        )
+
+        result = await self.session.execute(query)
+        books = result.all()
+        if not books:
+            return []
+        
         return books

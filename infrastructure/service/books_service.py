@@ -84,6 +84,27 @@ class BookService(RequestsRepo):
         books_by_author = [BookInfoDTO(**data) for data in books_dict.values()]
         return books_by_author, author
 
+    async def get_books_by_sequence(self, seq_id: int) -> tuple[str, list[BookInfoDTO], str] | None:
+        books = await self.books.get_books_by_sequence_id(seq_id)
+        if not books:
+            return None
+
+        books_dict = {}
+        sequence_name, author = None, None
+
+        for book, author_description, average_rate, seq_name in books:
+            sequence_name = seq_name
+            author = self.get_author_full_name(author_description)
+
+            if book.book_id not in books_dict:
+                books_dict[book.book_id] = {
+                    **book.__dict__,
+                    "average_rating": round(average_rate, 2) if average_rate else 0.0,
+                }
+
+        books_by_sequence = [BookInfoDTO(**data) for data in books_dict.values()]
+        return sequence_name, books_by_sequence, author
+
     async def gather_authors(self, book_id: int) -> list[str] | None:
         authors = await self.authors.get_authors_by_book_id(book_id)
         if not authors:
