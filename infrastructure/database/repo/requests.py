@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from infrastructure.database.repo.author_repository import AuthorRepo
 from infrastructure.database.repo.books_repository import BookRepo
 from infrastructure.database.repo.genres_repository import GenreRepo
-from infrastructure.database.repo.sequence_repository import SequenceRepo
+from infrastructure.database.repo.sequence_repository import SequencesRepo
 from infrastructure.database.repo.user_repository import UserRepo
 
 
@@ -41,11 +41,11 @@ class RequestsRepo:
         return AuthorRepo(self.session)
 
     @property
-    def sequences(self) -> SequenceRepo:
+    def sequences(self) -> SequencesRepo:
         """
-        The SequenceRepo repository sessions are required to manage sequence operations.
+        The SequencesRepo repository sessions are required to manage book series operations.
         """
-        return SequenceRepo(self.session)
+        return SequencesRepo(self.session)
 
     @property
     def genres(self) -> GenreRepo:

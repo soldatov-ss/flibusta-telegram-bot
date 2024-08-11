@@ -5,8 +5,8 @@ from infrastructure.database.repo.base import BaseRepo
 from infrastructure.dtos.sequence_dtos import SequenceInfoDTO
 
 
-class SequenceRepo(BaseRepo):
-    async def get_sequences_by_book_id(self, book_id: int) -> list[SequenceInfoDTO] | None:
+class SequencesRepo(BaseRepo):
+    async def get_sequence_by_book_id(self, book_id: int) -> list[SequenceInfoDTO] | None:
         query = (
             select(SequenceDescriptionModel, SequenceModel)
             .join(SequenceModel, SequenceDescriptionModel.seq_id == SequenceModel.seq_id)

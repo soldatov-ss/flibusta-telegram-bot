@@ -91,8 +91,8 @@ class BookService(RequestsRepo):
         return [f"{author.first_name} {author.middle_name} {author.last_name}".strip() for author in authors]
 
     async def gather_sequences(self, book_id: int) -> list[str] | None:
-        sequences = await self.sequences.get_sequences_by_book_id(book_id)
-        return [sequence.seq_name.strip() for sequence in sequences if sequences]
+        sequences = await self.sequences.get_sequence_by_book_id(book_id)
+        return [item.seq_name.strip() for item in sequences if sequences]
 
     async def gather_genres(self, book_id: int) -> list[str] | None:
         genres = await self.genres.get_genres_by_book_id(book_id)

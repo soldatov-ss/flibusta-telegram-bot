@@ -5,6 +5,7 @@ import betterlogging as bl
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import BotCommand, BotCommandScopeDefault
 
 from infrastructure.database.setup import session_pool
 from tgbot.config import Config, load_config
@@ -14,7 +15,22 @@ from tgbot.middlewares.database import DatabaseMiddleware
 from tgbot.services import broadcaster
 
 
+async def set_commands(bot: Bot):
+    commands = [
+        BotCommand(
+            command="start",
+            description="Start bot",
+        ),
+        BotCommand(
+            command="author",
+            description="Find books by author's name",
+        ),
+    ]
+    await bot.set_my_commands(commands=commands, scope=BotCommandScopeDefault())
+
+
 async def on_startup(bot: Bot, admin_ids: list[int]):
+    await set_commands(bot)
     await broadcaster.broadcast(bot, admin_ids, "Bot has been started")
 
 
