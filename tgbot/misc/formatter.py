@@ -1,5 +1,6 @@
 from infrastructure.dtos.author_dtos import AuthorBaseDTO
 from infrastructure.dtos.book_dtos import BookFullInfoDTO, BooksDTO
+from infrastructure.dtos.sequence_dtos import SequenceDTO
 from tgbot.misc.book_utils import clean_html
 
 
@@ -55,3 +56,16 @@ def author_formatter(count: int, author: AuthorBaseDTO, link: str, is_first_page
         return f"🔎 Found {count} authors total 🔍\n\n{author_line}\n{books_line}"
     else:
         return f"{author_line}\n{books_line}"
+
+
+def sequence_formatter(count: int, sequence: SequenceDTO, link: str, is_first_page: bool) -> str:
+    link = format_link(link)
+
+    sequence_line = f"<b>📚{sequence.seq_name}</b>"
+    author_line = f"Author: {sequence.seq_author_name}"
+    books_line = f"Books: /{link}"
+
+    if is_first_page:
+        return f"🔎 Found {count} sequences total 🔍\n\n{sequence_line}\n{author_line}\n{books_line}"
+    else:
+        return f"{sequence_line}\n{author_line}\n{books_line}"
